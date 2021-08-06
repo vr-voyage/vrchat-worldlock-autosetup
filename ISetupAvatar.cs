@@ -8,12 +8,15 @@ using System.Threading.Tasks;
 using UnityEngine;
 using VRC.SDK3.Avatars.Components;
 
-public partial class SetupWindow
+namespace Myy
 {
-    public interface ISetupAvatar
+    public partial class SetupWindow
     {
-        void SetAssetsPath(string path);
-        void Setup(VRCAvatarDescriptor avatar, params GameObject[] objectsToFix);
+        public interface ISetupAvatar
+        {
+            void SetAssetsPath(string path);
+            void Setup(VRCAvatarDescriptor avatar, params GameObject[] objectsToFix);
+        }
     }
 }
 

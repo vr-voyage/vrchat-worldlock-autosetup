@@ -3,17 +3,20 @@
 using UnityEngine;
 using UnityEngine.Animations;
 
-public partial class SetupWindow
+namespace Myy
 {
-    public class MyyConstraintHelpers
+    public partial class SetupWindow
     {
-        public static ConstraintSource ConstraintSource(Transform transform, float weight)
+        public class MyyConstraintHelpers
         {
-            return new ConstraintSource()
+            public static ConstraintSource ConstraintSource(Transform transform, float weight)
             {
-                sourceTransform = transform,
-                weight = weight
-            };
+                return new ConstraintSource()
+                {
+                    sourceTransform = transform,
+                    weight = weight
+                };
+            }
         }
     }
 }

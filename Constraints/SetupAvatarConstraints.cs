@@ -6,231 +6,233 @@ using VRC.SDK3.Avatars.Components;
 using UnityEditor.Animations;
 using VRC.SDK3.Avatars.ScriptableObjects;
 
-public partial class SetupWindow
+namespace Myy
 {
-    public class SetupAvatarConstraints : ISetupAvatar
+    public partial class SetupWindow
     {
-        private SetupObjectConstraints[] objects;
-
-        public string variableNamePrefix;
-        public MyyAssetManager assetsBase;
-        private string avatarCopyName;
-
-        public SetupAvatarConstraints()
+        public class SetupAvatarConstraints : ISetupAvatar
         {
-            objects = new SetupObjectConstraints[0];
-            variableNamePrefix = "Lock";
-            assetsBase = new MyyAssetManager();
-        }
+            private SetupObjectConstraints[] objects;
 
-        public void SetAssetsPath(string path)
-        {
-            assetsBase.SetPath(path);
-        }
+            public string variableNamePrefix;
+            public MyyAssetManager assetsBase;
+            private string avatarCopyName;
 
-        public MyyAssetManager PrepareRun(VRCAvatarDescriptor avatar)
-        {
-            MyyAssetManager runAssets = null;
-            avatarCopyName = string.Format("{0}-ConstraintLock-{1}", avatar.name, DateTime.Now.ToString("yyyyMMdd-HHmmss-ffff"));
-            string runFolderName = MyyAssetManager.FilesystemFriendlyName(avatarCopyName);
-            string runFolderPath = assetsBase.MkDir(runFolderName);
-            if (runFolderPath == "")
+            public SetupAvatarConstraints()
             {
-                MyyLogger.LogError("Could not create run dir : {0}", assetsBase.AssetPath(runFolderName));
+                objects = new SetupObjectConstraints[0];
+                variableNamePrefix = "Lock";
+                assetsBase = new MyyAssetManager();
             }
-            else
+
+            public void SetAssetsPath(string path)
             {
-                runAssets = new MyyAssetManager(runFolderPath);
+                assetsBase.SetPath(path);
             }
-            
-            return runAssets;
-        }
 
-        public bool EnoughResourcesForSetup(VRCAvatarDescriptor avatar, int nObjects)
-        {
-            int limit = (
-                VRCExpressionParameters.MAX_PARAMETER_COST
-                - VRCExpressionParameters.TypeCost(VRCExpressionParameters.ValueType.Int));
-
-            int currentCost = 
-                (avatar.expressionParameters != null) ?
-                avatar.expressionParameters.CalcTotalCost() :
-                (1 * VRCExpressionParameters.TypeCost(VRCExpressionParameters.ValueType.Int) +
-                 2 * VRCExpressionParameters.TypeCost(VRCExpressionParameters.ValueType.Float));
-
-            return (currentCost + nObjects) < limit;
-        }
-
-        public bool PrepareObjects(MyyAssetManager runAssets)
-        {
-            bool atLeastOnePrepared = false;
-            foreach (SetupObjectConstraints o in objects)
+            public MyyAssetManager PrepareRun(VRCAvatarDescriptor avatar)
             {
-                string objectName = o.fixedObject.name;
-                string objectFolderName = MyyAssetManager.FilesystemFriendlyName(objectName);
-                string objectSavePath = runAssets.MkDir(objectFolderName);
-                if (objectSavePath == "")
+                MyyAssetManager runAssets = null;
+                avatarCopyName = string.Format("{0}-ConstraintLock-{1}", avatar.name, DateTime.Now.ToString("yyyyMMdd-HHmmss-ffff"));
+                string runFolderName = MyyAssetManager.FilesystemFriendlyName(avatarCopyName);
+                string runFolderPath = assetsBase.MkDir(runFolderName);
+                if (runFolderPath == "")
                 {
-                    MyyLogger.LogError("Could not prepare the appropriate folder for {0}", objectFolderName);
-                    continue;
-                }
-
-                o.assetManager.SetPath(objectSavePath);
-                if (!o.Prepare())
-                {
-                    MyyLogger.LogError("Could not prepare object {0}", o.fixedObject.name);
-                    continue;
-                }
-                atLeastOnePrepared |= o.IsPrepared();
-            }
-            return atLeastOnePrepared;
-        }
-
-        private void GenerateSetup(GameObject[] objectsToFix)
-        {
-            int nObjects = objectsToFix.Length;
-            objects = new SetupObjectConstraints[nObjects];
-            
-            for (int i = 0; i < nObjects; i++)
-            {
-                objects[i] = new SetupObjectConstraints(objectsToFix[i], variableNamePrefix + i);
-            }
-
-        }
-
-        private VRCAvatarDescriptor CopyAvatar(VRCAvatarDescriptor avatar)
-        {
-            GameObject copy = Instantiate(avatar.gameObject, Vector3.zero, Quaternion.identity);
-            return copy.GetComponent<VRCAvatarDescriptor>();
-        }
-
-        private void AttachToAvatar(VRCAvatarDescriptor avatar, MyyAssetManager runAssets)
-        {
-            
-            VRCAvatarDescriptor avatarCopy = CopyAvatar(avatar);
-            avatarCopy.name = avatarCopyName;
-
-            VRCExpressionParameters parameters =
-                runAssets.ScriptAssetCopyOrCreate<VRCExpressionParameters>(
-                    avatarCopy.expressionParameters, "SDK3-Params.asset");
-            
-            /* FIXME Dubious. The menu should be created correctly,
-             * not fixed afterwards...
-             */
-            if (parameters.parameters == null)
-            {
-                MyyVRCHelpers.AddDefaultParameters(parameters);
-            }
-
-            VRCExpressionsMenu menu =
-                runAssets.ScriptAssetCopyOrCreate<VRCExpressionsMenu>(
-                    avatarCopy.expressionsMenu, "SDK3-Menu.asset");
-            
-            VRCExpressionsMenu subMenu = ScriptableObject.CreateInstance<VRCExpressionsMenu>();
-            /* FIXME Generate as many menu as necessary */
-            runAssets.GenerateAsset(subMenu, "ToggleMenu.asset");
-            
-            AnimatorController controller;
-            string controllerName = "FX";
-            {
-                var fxLayer = MyyVRCHelpers.AvatarGetFXLayer(avatarCopy);
-                if (fxLayer.animatorController != null)
-                {
-                    controller = runAssets.ControllerBackup(
-                        (AnimatorController)fxLayer.animatorController,
-                        controllerName);
+                    MyyLogger.LogError("Could not create run dir : {0}", assetsBase.AssetPath(runFolderName));
                 }
                 else
                 {
-                    controller = runAssets.GenerateAnimController(controllerName);
+                    runAssets = new MyyAssetManager(runFolderPath);
                 }
+
+                return runAssets;
             }
 
-            avatarCopy.customExpressions = true;
-            avatarCopy.expressionsMenu = menu;
-            avatarCopy.expressionParameters = parameters;
-            
-            MyyVRCHelpers.AvatarSetFXLayerController(avatarCopy, controller);
-
-
-            foreach (SetupObjectConstraints toAttach in objects)
+            public bool EnoughResourcesForSetup(VRCAvatarDescriptor avatar, int nObjects)
             {
-                if (!toAttach.IsPrepared()) continue;
+                int limit = (
+                    VRCExpressionParameters.MAX_PARAMETER_COST
+                    - VRCExpressionParameters.TypeCost(VRCExpressionParameters.ValueType.Int));
 
-                toAttach.AttachHierarchy(avatarCopy.gameObject);
-                string variableName = toAttach.animVariableName;
+                int currentCost =
+                    (avatar.expressionParameters != null) ?
+                    avatar.expressionParameters.CalcTotalCost() :
+                    (1 * VRCExpressionParameters.TypeCost(VRCExpressionParameters.ValueType.Int) +
+                     2 * VRCExpressionParameters.TypeCost(VRCExpressionParameters.ValueType.Float));
 
-                /* FIXME
-                 * Check BEFORE HAND if the animator doesn't have
-                 * variables with the same name but different
-                 * types.
-                 */
-                AnimatorControllerParameter param = 
-                    MyyAnimHelpers.ControllerGetParam(controller, variableName);
-                
-                if (param == null) 
+                return (currentCost + nObjects) < limit;
+            }
+
+            public bool PrepareObjects(MyyAssetManager runAssets)
+            {
+                bool atLeastOnePrepared = false;
+                foreach (SetupObjectConstraints o in objects)
                 {
-                    param = new AnimatorControllerParameter();
-                    param.name = variableName;
-                    param.type = AnimatorControllerParameterType.Bool;
-                    param.defaultBool = false;
+                    string objectName = o.fixedObject.name;
+                    string objectFolderName = MyyAssetManager.FilesystemFriendlyName(objectName);
+                    string objectSavePath = runAssets.MkDir(objectFolderName);
+                    if (objectSavePath == "")
+                    {
+                        MyyLogger.LogError("Could not prepare the appropriate folder for {0}", objectFolderName);
+                        continue;
+                    }
+
+                    o.assetManager.SetPath(objectSavePath);
+                    if (!o.Prepare())
+                    {
+                        MyyLogger.LogError("Could not prepare object {0}", o.fixedObject.name);
+                        continue;
+                    }
+                    atLeastOnePrepared |= o.IsPrepared();
                 }
-                controller.AddParameter(param);
-
-                /* FIXME Set this elsewhere */
-                AnimatorStateMachine machineOnOff = toAttach.StateMachine(SetupObjectConstraints.MachineIndex.ONOFF);
-                MyyAnimHelpers.ControllerAddLayer(controller, machineOnOff);
-                MyyVRCHelpers.VRCParamsGetOrAddParam(parameters, param);
-                MyyVRCHelpers.VRCMenuAddToggle(subMenu, toAttach.nameInMenu, toAttach.animVariableName);
+                return atLeastOnePrepared;
             }
 
-            /* FIXME Let the user define the last parameter */
-            MyyVRCHelpers.VRCMenuAddSubMenu(menu, subMenu, "World Objects");
-
-            avatarCopy.gameObject.SetActive(true);
-        }
-
-        public void Setup(VRCAvatarDescriptor avatar, params GameObject[] objectsToFix)
-        {
-            if (!assetsBase.CanAccessSavePath())
+            private void GenerateSetup(GameObject[] objectsToFix)
             {
-                MyyLogger.LogError("Cannot access save path {0} !", assetsBase.AssetPath(""));
-                /* FIXME
-                 * Instead of spewing some error messages,
-                 * trying to actually create the folder should be
-                 * a better solution.
+                int nObjects = objectsToFix.Length;
+                objects = new SetupObjectConstraints[nObjects];
+
+                for (int i = 0; i < nObjects; i++)
+                {
+                    objects[i] = new SetupObjectConstraints(objectsToFix[i], variableNamePrefix + i);
+                }
+
+            }
+
+            private VRCAvatarDescriptor CopyAvatar(VRCAvatarDescriptor avatar)
+            {
+                GameObject copy = Instantiate(avatar.gameObject, Vector3.zero, Quaternion.identity);
+                return copy.GetComponent<VRCAvatarDescriptor>();
+            }
+
+            private void AttachToAvatar(VRCAvatarDescriptor avatar, MyyAssetManager runAssets)
+            {
+
+                VRCAvatarDescriptor avatarCopy = CopyAvatar(avatar);
+                avatarCopy.name = avatarCopyName;
+
+                VRCExpressionParameters parameters =
+                    runAssets.ScriptAssetCopyOrCreate<VRCExpressionParameters>(
+                        avatarCopy.expressionParameters, "SDK3-Params.asset");
+
+                /* FIXME Dubious. The menu should be created correctly,
+                 * not fixed afterwards...
                  */
-                MyyLogger.LogError(
-                    "Most likely, you created a directory using the File Browser,\n" +
-                    "and Unity didn't register that folder yet");
-                return;
+                if (parameters.parameters == null)
+                {
+                    MyyVRCHelpers.AddDefaultParameters(parameters);
+                }
+
+                VRCExpressionsMenu menu =
+                    runAssets.ScriptAssetCopyOrCreate<VRCExpressionsMenu>(
+                        avatarCopy.expressionsMenu, "SDK3-Menu.asset");
+
+                VRCExpressionsMenu subMenu = ScriptableObject.CreateInstance<VRCExpressionsMenu>();
+                /* FIXME Generate as many menu as necessary */
+                runAssets.GenerateAsset(subMenu, "ToggleMenu.asset");
+
+                AnimatorController controller;
+                string controllerName = "FX";
+                {
+                    var fxLayer = MyyVRCHelpers.AvatarGetFXLayer(avatarCopy);
+                    if (fxLayer.animatorController != null)
+                    {
+                        controller = runAssets.ControllerBackup(
+                            (AnimatorController)fxLayer.animatorController,
+                            controllerName);
+                    }
+                    else
+                    {
+                        controller = runAssets.GenerateAnimController(controllerName);
+                    }
+                }
+
+                avatarCopy.customExpressions = true;
+                avatarCopy.expressionsMenu = menu;
+                avatarCopy.expressionParameters = parameters;
+
+                MyyVRCHelpers.AvatarSetFXLayerController(avatarCopy, controller);
+
+
+                foreach (SetupObjectConstraints toAttach in objects)
+                {
+                    if (!toAttach.IsPrepared()) continue;
+
+                    toAttach.AttachHierarchy(avatarCopy.gameObject);
+                    string variableName = toAttach.animVariableName;
+
+                    /* FIXME
+                     * Check BEFORE HAND if the animator doesn't have
+                     * variables with the same name but different
+                     * types.
+                     */
+                    AnimatorControllerParameter param =
+                        MyyAnimHelpers.ControllerGetParam(controller, variableName);
+
+                    if (param == null)
+                    {
+                        param = new AnimatorControllerParameter();
+                        param.name = variableName;
+                        param.type = AnimatorControllerParameterType.Bool;
+                        param.defaultBool = false;
+                    }
+                    controller.AddParameter(param);
+
+                    /* FIXME Set this elsewhere */
+                    AnimatorStateMachine machineOnOff = toAttach.StateMachine(SetupObjectConstraints.MachineIndex.ONOFF);
+                    MyyAnimHelpers.ControllerAddLayer(controller, machineOnOff);
+                    MyyVRCHelpers.VRCParamsGetOrAddParam(parameters, param);
+                    MyyVRCHelpers.VRCMenuAddToggle(subMenu, toAttach.nameInMenu, toAttach.animVariableName);
+                }
+
+                /* FIXME Let the user define the last parameter */
+                MyyVRCHelpers.VRCMenuAddSubMenu(menu, subMenu, "World Objects");
+
+                avatarCopy.gameObject.SetActive(true);
             }
 
-            if (!EnoughResourcesForSetup(avatar, objectsToFix.Length))
+            public void Setup(VRCAvatarDescriptor avatar, params GameObject[] objectsToFix)
             {
-                MyyLogger.LogError("Not enough ressources for the requested setup.");
-                MyyLogger.LogError("Most likely, the menu cost is too high");
-                return;
+                if (!assetsBase.CanAccessSavePath())
+                {
+                    MyyLogger.LogError("Cannot access save path {0} !", assetsBase.AssetPath(""));
+                    /* FIXME
+                     * Instead of spewing some error messages,
+                     * trying to actually create the folder should be
+                     * a better solution.
+                     */
+                    MyyLogger.LogError(
+                        "Most likely, you created a directory using the File Browser,\n" +
+                        "and Unity didn't register that folder yet");
+                    return;
+                }
+
+                if (!EnoughResourcesForSetup(avatar, objectsToFix.Length))
+                {
+                    MyyLogger.LogError("Not enough ressources for the requested setup.");
+                    MyyLogger.LogError("Most likely, the menu cost is too high");
+                    return;
+                }
+
+                GenerateSetup(objectsToFix);
+
+                MyyAssetManager runAssets = PrepareRun(avatar);
+                if (runAssets == null)
+                {
+                    MyyLogger.LogError("Can't prepare the assets folder. Aborting");
+                    return;
+                }
+                if (PrepareObjects(runAssets) == false)
+                {
+                    MyyLogger.LogError("Could not prepare any object...");
+                    return;
+                }
+
+                AttachToAvatar(avatar, runAssets);
             }
 
-            GenerateSetup(objectsToFix);
-
-            MyyAssetManager runAssets = PrepareRun(avatar);
-            if (runAssets == null)
-            {
-                MyyLogger.LogError("Can't prepare the assets folder. Aborting");
-                return;
-            }
-            if (PrepareObjects(runAssets) == false)
-            {
-                MyyLogger.LogError("Could not prepare any object...");
-                return;
-            }
-
-            AttachToAvatar(avatar, runAssets);
         }
-
     }
 }
-
 #endif

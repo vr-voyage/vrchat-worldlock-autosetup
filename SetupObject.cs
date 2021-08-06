@@ -3,59 +3,61 @@
 using UnityEngine;
 using UnityEditor.Animations;
 using VRC.SDK3.Avatars.ScriptableObjects;
-using VRC.SDK3.Avatars.Components;
 
-public partial class SetupWindow
+namespace Myy
 {
-    public class SetupObject
+    public partial class SetupWindow
     {
-        public GameObject fixedObject;
-
-        public MyyAssetManager assetManager;
-
-        public GameObject additionalHierarchy;
-        public string animVariableName;
-        public string nameInMenu;
-        public AnimationClip[] clips;
-        public AnimatorStateMachine[] machines;
-        public AnimatorControllerParameter[] parameters;
-        
-        protected bool prepared = false;
-
-        public SetupObject(GameObject go, string variablePrefix, string titleInMenu = "")
+        public class SetupObject
         {
-            fixedObject = go;
-            assetManager = new MyyAssetManager();
-            nameInMenu = (titleInMenu == "" ? MyyVRCHelpers.MenuFriendlyName(go.name) : titleInMenu);
+            public GameObject fixedObject;
 
-            additionalHierarchy = new GameObject();
-            animVariableName = variablePrefix;
-            prepared = false;
-        }
+            public MyyAssetManager assetManager;
 
-        public bool IsPrepared()
-        {
-            return prepared;
-        }
+            public GameObject additionalHierarchy;
+            public string animVariableName;
+            public string nameInMenu;
+            public AnimationClip[] clips;
+            public AnimatorStateMachine[] machines;
+            public AnimatorControllerParameter[] parameters;
 
-        public void CopyAnimParametersTo(AnimatorController controller)
-        {
-            foreach (AnimatorControllerParameter param in parameters)
+            protected bool prepared = false;
+
+            public SetupObject(GameObject go, string variablePrefix, string titleInMenu = "")
             {
-                controller.AddParameter(param);
-            }
-        }
+                fixedObject = go;
+                assetManager = new MyyAssetManager();
+                nameInMenu = (titleInMenu == "" ? MyyVRCHelpers.MenuFriendlyName(go.name) : titleInMenu);
 
-        public void CopyAnimParametersTo(VRCExpressionParameters menuParams)
-        {
-            foreach (AnimatorControllerParameter param in parameters)
+                additionalHierarchy = new GameObject();
+                animVariableName = variablePrefix;
+                prepared = false;
+            }
+
+            public bool IsPrepared()
             {
-                MyyVRCHelpers.VRCParamsGetOrAddParam(menuParams, param);
+                return prepared;
             }
-            
+
+            public void CopyAnimParametersTo(AnimatorController controller)
+            {
+                foreach (AnimatorControllerParameter param in parameters)
+                {
+                    controller.AddParameter(param);
+                }
+            }
+
+            public void CopyAnimParametersTo(VRCExpressionParameters menuParams)
+            {
+                foreach (AnimatorControllerParameter param in parameters)
+                {
+                    MyyVRCHelpers.VRCParamsGetOrAddParam(menuParams, param);
+                }
+
+            }
+
+
         }
-
-
     }
 }
 
