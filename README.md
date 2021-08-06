@@ -22,7 +22,7 @@ See https://github.com/vr-voyage/vrchat-worldlock-autosetup/releases
 
 # Install
 
-* Either install **ObjectsFixer.unitypackage** by clicking on **Assets > Import Package... > Custom Package...** inside the editor
+* Either install **ObjectsFixer.unitypackage** using the editor menu **Assets > Import Package... > Custom Package...**.
 
 **OR**
 
