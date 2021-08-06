@@ -3,6 +3,7 @@
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
+using VRC.SDK3.Avatars.Components;
 
 public class SetupWindowWorldLockConstraints : SetupWindow
 {
@@ -11,6 +12,26 @@ public class SetupWindowWorldLockConstraints : SetupWindow
     private bool UseableObject(GameObject o)
     {
         return o != null;
+    }
+
+
+    const int addedControls = 1;
+    protected override bool AvatarUseable(VRCAvatarDescriptor avatar)
+    {
+        if (avatar == null) return false;
+        if (!avatar.customExpressions) return true;
+
+        int maxControlsAuthorized = maxControlsPerMenu - hiddenControls - addedControls;
+        if (avatar.expressionsMenu.controls.Count > maxControlsAuthorized)
+        {
+            string errorMessage = string.Format(
+                "Only avatars with less than {0} controls on the main menu are authorized",
+                maxControlsAuthorized);
+            EditorGUILayout.HelpBox(errorMessage, MessageType.Error);
+            return false;
+        }
+
+        return true;
     }
 
     protected override bool AnyObjectUseable()
@@ -44,7 +65,7 @@ public class SetupWindowWorldLockConstraints : SetupWindow
     [MenuItem("Voyage / Pin Object with Constraints (PC ONLY - SDK 3.0)")]
     public static void ShowWindow()
     {
-        GetWindow(typeof(SetupWindowWorldLockConstraints));
+        GetWindow(typeof(SetupWindowWorldLockConstraints), false, "Constraints");
     }
 
     private void OnGUI()

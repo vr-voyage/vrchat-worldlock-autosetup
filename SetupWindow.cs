@@ -1,11 +1,8 @@
 ﻿#if UNITY_EDITOR
 
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 using VRC.SDK3.Avatars.Components;
-using static VRC.SDKBase.VRC_AnimatorLayerControl;
 
 public partial class SetupWindow : EditorWindow
 {
@@ -26,6 +23,9 @@ public partial class SetupWindow : EditorWindow
     private string assetsDir;
 
     protected ISetupAvatar setupTool;
+
+    protected const int maxControlsPerMenu = 8;
+    protected const int hiddenControls = 1; // Reset Avatar
 
     virtual protected void SetSetupTool()
     {
@@ -56,6 +56,11 @@ public partial class SetupWindow : EditorWindow
         return new GameObject[0];
     }
 
+    protected virtual bool AvatarUseable(VRCAvatarDescriptor avatar)
+    {
+        return false;
+    }
+
     protected virtual void GUISetup()
     {
         bool everythingOK = true;
@@ -65,6 +70,10 @@ public partial class SetupWindow : EditorWindow
         if (avatar == null)
         {
             EditorGUILayout.HelpBox("Select the avatar", MessageType.Error);
+            everythingOK = false;
+        }
+        else if (!AvatarUseable(avatar))
+        {
             everythingOK = false;
         }
 
