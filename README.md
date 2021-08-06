@@ -1,5 +1,3 @@
-【VRCHAT】World lock autosetup - アバター・アイテムをワールド固定する機能追加ツール
-
 # About
 
 This tool allows you to setup world-locked items on your avatar, meaning that the items won't move after making them appear.  
@@ -15,9 +13,20 @@ As always, backup the items and avatars you'll use with this tool. I only tested
 So far, so long, no problems arised, but you might encounter bugs I haven't.
 
 Locking items with particles work on Quest, but it still pretty limitative.  
-If you don't want to have a "Very Poor" rated avatar, the limits are 200 polygons for Quest users, 2500 for PC users.
-
+If you don't want to have a "Very Poor" rated avatar, the limits are 200 polygons for Quest users, 2500 for PC users.  
 Locking items with constraints is much less limitative, (the items stats are added to your avatar stats) but only work on PC for the moment.
+
+# Download
+
+See https://github.com/vr-voyage/vrchat-worldlock-autosetup/releases
+
+# Install
+
+* Either install **ObjectsFixer.unitypackage** by clicking on **Assets > Import Package... > Custom Package...** inside the editor
+
+**OR**
+
+* Copy the code of this repository inside the **Assets** of your SDK3 Avatar project.
 
 # Items in the demo
 
