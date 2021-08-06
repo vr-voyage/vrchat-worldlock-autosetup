@@ -4,6 +4,8 @@
 
 ## Lock an item with Particles
 
+https://user-images.githubusercontent.com/84687350/128454218-0d64153f-094c-4279-8635-006793f7c4da.mov
+
 * Add the item to the Scene root
 * Add your avatar to the Scene root
 * For good measures, make sure that your avatar is at position 0,0,0 when measuring the distance between your avatar and the object you want to setup
@@ -17,6 +19,8 @@
 * A new setup clone of the avatar will appear.
 
 You can then upload the clone.
+
+https://user-images.githubusercontent.com/84687350/128454266-9a728bc1-1f2e-4f90-93c9-e9a5683ed453.mov
 
 This new clone main menu will have two new buttons :
 * Spawn - Which allows you to spawn the actual item, using the Particle emitter
@@ -38,6 +42,8 @@ Note :
 
 ## Lock an item with Constraints
 
+https://user-images.githubusercontent.com/84687350/128454290-41b096f6-5657-4ec5-a816-60d50565aba4.mov
+
 * Add the item to the Scene root
 * Add your avatar to the Scene root
 * For good measures, make sure that your avatar is at 0,0,0 when measuring the distance between your avatar and the object you want to setup
@@ -51,6 +57,8 @@ Note :
 * A new setup clone of the avatar will appear.
 
 You can then upload the clone.
+
+https://user-images.githubusercontent.com/84687350/128454320-78cb2eb1-1556-4a7e-888d-b442904e48ae.mov
 
 This new clone will have a new submenu button "World Objects" with Toggle buttons allowing you to spawn each individual object.
 
@@ -124,8 +132,8 @@ Sceneでアバターの設定される複製が追加されます。
 + アバターの一部ですから、（座席以外）アバターが使えるComponentをアイテムに付けられます　(音楽、アニメーション、…）。
 + RatingをMedium以下に下げるComponentを付けないなら、アバターとアイテムの全体のポリゴン数が7万を越えない限り、RatingはGood以上になります。
 
-> 座席は付けても使えません。
-> このツールは固定されているアイテムを有効・無効します。
-> 現在は、VRChatのアバターで座席を持つ物を無効すると二度と使えなません。
-> 一応、その座席を使わせる方法がありますね（他のGameObjectに座席を設置して、Constraintを使ってそのGameObjectを固定されている物に付けて、アニメーションを使って座席のColliderを有効・無効したら使えることになります）。
+> **座席は付けても使えません。**  
+> このツールは固定されているアイテムを有効・無効します。  
+> 現在は、VRChatのアバターで座席を持つ物を無効すると二度と使えなません。  
+> 一応、その座席を使わせる方法がありますね（他のGameObjectに座席を設置して、Constraintを使ってそのGameObjectを固定されている物に付けて、アニメーションを使って座席のColliderを有効・無効したら使えることになります）。  
 > 将来で、付けた座席を使えることにする機能を追加するつもりです。
