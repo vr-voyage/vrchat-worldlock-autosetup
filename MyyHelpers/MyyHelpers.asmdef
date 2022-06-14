@@ -1,8 +1,6 @@
 {
-    "name": "ObjectsFixer",
-    "references": [
-        "GUID:f686a7ed1cf8b5c468822596f4e4464f"
-    ],
+    "name": "MyyHelpers",
+    "references": [],
     "includePlatforms": [
         "Editor"
     ],

@@ -13,6 +13,7 @@ namespace Myy
         SerializedProperty avatarSerialized;
         SerializedProperty worldLockedObjectSerialized;
         SerializedProperty saveDirPathSerialized;
+        SerializedProperty lockAtWorldCenterSerialized;
 
         public VRCAvatarDescriptor avatar;
 
@@ -21,6 +22,8 @@ namespace Myy
         public string worldLockName = "MainLock-RotPos";
         public string parentLockName = "MainLock-ParentPos";
         public string lockedContainerName = "MainLock-Container";
+
+        public bool lockAtWorldCenter = false;
 
         private string assetsDir;
 
@@ -40,6 +43,7 @@ namespace Myy
             serialO = new SerializedObject(this);
             worldLockedObjectSerialized = serialO.FindProperty("worldLockedObjects");
             avatarSerialized = serialO.FindProperty("avatar");
+            lockAtWorldCenterSerialized = serialO.FindProperty("lockAtWorldCenter");
 
             saveDirPathSerialized = serialO.FindProperty("saveDir");
             SetSetupTool();
@@ -71,7 +75,7 @@ namespace Myy
             EditorGUILayout.PropertyField(avatarSerialized);
             if (avatar == null)
             {
-                EditorGUILayout.HelpBox("Select the avatar", MessageType.Error);
+                EditorGUILayout.HelpBox(StringID.Message_SelectAvatar.Translation(), MessageType.Error);
                 everythingOK = false;
             }
             else if (!AvatarUseable(avatar))
@@ -79,11 +83,12 @@ namespace Myy
                 everythingOK = false;
             }
 
+            EditorGUILayout.PropertyField(lockAtWorldCenterSerialized);
             EditorGUILayout.PropertyField(worldLockedObjectSerialized, true);
 
             if (!AnyObjectUseable())
             {
-                EditorGUILayout.HelpBox("Select the Object", MessageType.Error);
+                EditorGUILayout.HelpBox("No useable avatar provided", MessageType.Error);
                 everythingOK = false;
             }
 
@@ -92,7 +97,7 @@ namespace Myy
             {
                 if (!AssetDatabase.IsValidFolder(saveDirPath))
                 {
-                    string assetFolderPath = MyyAssetManager.AssetFolder(saveDirPath);
+                    string assetFolderPath = MyyAssetsManager.AssetFolder(saveDirPath);
                     bool canInfereFolder = AssetDatabase.IsValidFolder(assetFolderPath);
                     if (!canInfereFolder)
                     {
@@ -114,8 +119,8 @@ namespace Myy
 
             if (GUILayout.Button("Setup world locked object"))
             {
-                setupTool.SetAssetsPath(MyyAssetManager.AssetRelPath(saveDirPath).Trim(' ', '/'));
-                setupTool.Setup(avatar, UseableObjects());
+                setupTool.SetAssetsPath(MyyAssetsManager.DirPathFromAssets(saveDirPath).Trim(' ', '/'));
+                setupTool.Setup(avatar, lockAtWorldCenter, UseableObjects());
             }
         }
     }

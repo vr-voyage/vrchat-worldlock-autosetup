@@ -26,10 +26,10 @@ namespace Myy
             int maxControlsAuthorized = maxControlsPerMenu - hiddenControls - addedControls;
             if (avatar.expressionsMenu.controls.Count > maxControlsAuthorized)
             {
-                string errorMessage = string.Format(
-                    "Only avatars with less than {0} controls on the main menu are authorized",
-                    maxControlsAuthorized);
-                EditorGUILayout.HelpBox(errorMessage, MessageType.Error);
+                EditorGUILayout.HelpBox(
+                    $"Ensure that this avatar menu has less then {maxControlsAuthorized} controls.\n" +
+                    "Else, we cannot add the required buttons to operate in-game.",
+                    MessageType.Error);
                 return false;
             }
 
