@@ -37,7 +37,7 @@ namespace Myy
             return prepared;
         }
 
-        public void CopyAnimParametersTo(AnimatorController controller)
+        public void CopyAnimationParameters(AnimatorController controller)
         {
             foreach (AnimatorControllerParameter param in parameters)
             {
@@ -45,7 +45,7 @@ namespace Myy
             }
         }
 
-        public void CopyAnimParametersTo(VRCExpressionParameters menuParams)
+        public void CopyAnimationParameters(VRCExpressionParameters menuParams)
         {
             foreach (AnimatorControllerParameter param in parameters)
             {

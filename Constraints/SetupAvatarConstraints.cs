@@ -8,7 +8,8 @@ using VRC.SDK3.Avatars.ScriptableObjects;
 
 namespace Myy
 {
-    public class SetupAvatarConstraints : ISetupAvatar
+
+    public class SetupAvatarConstraints
     {
         private SetupObjectConstraints[] objects;
 
@@ -197,7 +198,7 @@ namespace Myy
             avatarCopy.gameObject.SetActive(true);
         }
 
-        public void Setup(VRCAvatarDescriptor avatar, bool lockAtWorldCenter, params GameObject[] objectsToFix)
+        public void Setup(VRCAvatarDescriptor avatar, ConstraintsGlobalOptions options, params GameObject[] objectsToFix)
         {
             if (!assetsBase.CanAccessSavePath())
             {
@@ -220,11 +221,9 @@ namespace Myy
                 return;
             }
 
-            /* FIXME The propagation of this parameter is fugly.
-             * These are per object parameter actually.
-             * Find a way to provide parameters per object.
+            /* FIXME Manage the global options correctly
              */
-            GenerateSetup(objectsToFix, lockAtWorldCenter);
+            GenerateSetup(objectsToFix, options.lockAtWorldOrigin);
 
             MyyAssetsManager runAssets = PrepareRun(avatar);
             if (runAssets == null)

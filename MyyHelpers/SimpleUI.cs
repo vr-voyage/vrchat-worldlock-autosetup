@@ -19,13 +19,14 @@ namespace Myy
                 property: property,
                 label: new GUIContent(label),
                 includeChildren: true);
+            EditorGUILayout.Space(12);
             return Check == null || Check(property);
         }
     }
 
     public class SimpleEditorUI : List<SimpleUIElement>
     {
-        readonly SerializedObject serialO;
+        public readonly SerializedObject serialO;
 
         public SimpleEditorUI(SerializedObject serialObject)
         {

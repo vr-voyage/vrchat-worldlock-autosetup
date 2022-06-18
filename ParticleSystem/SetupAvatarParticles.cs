@@ -10,9 +10,9 @@ namespace Myy
 {
 
     /* FIXME
-        * Factorize...
-        */
-    public class SetupAvatarParticles : ISetupAvatar
+     * Factorize...
+     */
+    public class SetupAvatarParticles
     {
         private SetupObjectParticles[] objects;
         public string variableName;
@@ -39,7 +39,7 @@ namespace Myy
             string runFolderPath = assetsBase.MkDir(runFolderName);
             if (runFolderPath == "")
             {
-                MyyLogger.LogError("Could not create run dir : {0}", assetsBase.AssetPath(runFolderName));
+                MyyLogger.LogError($"Could not create run dir : {assetsBase.AssetPath(runFolderName)}");
             }
             else
             {
@@ -71,14 +71,14 @@ namespace Myy
                 string objectSavePath = runAssets.MkDir(objectFolderName);
                 if (objectSavePath == "")
                 {
-                    MyyLogger.LogError("Could not prepare the appropriate folder for {0}", objectFolderName);
+                    MyyLogger.LogError($"Could not prepare the appropriate folder for {objectFolderName}");
                     continue;
                 }
 
                 o.assetManager.SetPath(objectSavePath);
                 if (!o.Prepare())
                 {
-                    MyyLogger.LogError("Could not prepare object {0}", o.fixedObject.name);
+                    MyyLogger.LogError($"Could not prepare object {o.fixedObject.name}");
                     continue;
                 }
                 atLeastOnePrepared |= o.IsPrepared();
@@ -149,14 +149,14 @@ namespace Myy
 
                 MyyVRCHelpers.AvatarSetFXLayerController(avatarCopy, controller);
 
-                toAttach.AttachHierarchy(avatarCopy.gameObject);
-                toAttach.CopyAnimParametersTo(controller);
+                toAttach.AttachToHierarchy(avatarCopy.gameObject);
+                toAttach.CopyAnimationParameters(controller);
                 /* FIXME Move to ObjectSetup */
                 for (int i = 0; i < toAttach.machines.Length; i++)
                 {
                     MyyAnimHelpers.ControllerAddLayer(controller, toAttach.machines[i]);
                 }
-                toAttach.CopyAnimParametersTo(menuParams);
+                toAttach.CopyAnimationParameters(menuParams);
                 toAttach.VRCMenuAddButtons(menu);
 
                 avatarCopy.gameObject.SetActive(true);
@@ -177,11 +177,13 @@ namespace Myy
 
         }
 
-        public void Setup(VRCAvatarDescriptor avatar, bool _, params GameObject[] objectsToFix)
+        public void Setup(
+            VRCAvatarDescriptor avatar,
+            params GameObject[] objectsToFix)
         {
             if (!assetsBase.CanAccessSavePath())
             {
-                MyyLogger.LogError("Cannot access save path {0} !", assetsBase.AssetPath(""));
+                MyyLogger.LogError($"Cannot access save path ${assetsBase.AssetPath("")}");
                 /* FIXME
                  * Instead of spewing some error messages,
                  * trying to actually create the folder should be

@@ -561,13 +561,13 @@ namespace Myy
             AnimatorState to,
             AnimatorConditionMode condition,
             string paramName,
-            float threshold,
+            bool threshold,
             bool defaultExitTime = false,
             float exitTime = 0,
             float duration = 0)
         {
             var transition = from.AddTransition(to, defaultExitTime);
-            transition.AddCondition(paramName, condition, threshold, exitTime, duration);
+            transition.AddCondition(paramName, condition, threshold == true ? 1 : 0, exitTime, duration);
             return transition;
         }
 

@@ -241,8 +241,8 @@ namespace Myy
             AnimatorState objectOFF = machineOnOff.AddState("OFF", clips[(int)ClipIndex.OFF]);
             AnimatorState objectON = machineOnOff.AddState("ON", clips[(int)ClipIndex.ON]);
 
-            objectOFF.AddTransition(objectON, AnimatorConditionMode.If, animVariableName, 1);
-            objectON.AddTransition(objectOFF, AnimatorConditionMode.IfNot, animVariableName, 1);
+            objectOFF.AddTransition(objectON, AnimatorConditionMode.If,    animVariableName, true);
+            objectON.AddTransition(objectOFF, AnimatorConditionMode.IfNot, animVariableName, true);
 
             machineOnOff.name = MyyAssetsManager.FilesystemFriendlyName("WorldLock-ParticlesOnOff");
 
@@ -274,8 +274,8 @@ namespace Myy
             AnimatorState waitingState = machineRotate.AddState("Waiting", clips[(int)ClipIndex.DUMMY]);
             AnimatorState rotatingState = machineRotate.AddState("Rotating", rotationTree);
 
-            waitingState.AddTransition(rotatingState, AnimatorConditionMode.If, animVarMenuOpened, 1);
-            rotatingState.AddTransition(waitingState, AnimatorConditionMode.IfNot, animVarMenuOpened, 1);
+            waitingState.AddTransition(rotatingState, AnimatorConditionMode.If,    animVarMenuOpened, true);
+            rotatingState.AddTransition(waitingState, AnimatorConditionMode.IfNot, animVarMenuOpened, true);
 
             machineRotate.name = "WorldLock-Rotate";
 
@@ -323,7 +323,7 @@ namespace Myy
                 {
                     AnimatorState currentState = progression[i];
                     AnimatorState nextState = progression[i + 1];
-                    currentState.AddTransition(nextState, AnimatorConditionMode.If, animVarMenuOpened, 1);
+                    currentState.AddTransition(nextState, AnimatorConditionMode.If, animVarMenuOpened, true);
 
                 }
 
@@ -331,7 +331,7 @@ namespace Myy
                 {
                     AnimatorState currentState = progression[i];
                     AnimatorState previousState = progression[i - 1];
-                    currentState.AddTransition(previousState, AnimatorConditionMode.IfNot, animVarMenuOpened, 1);
+                    currentState.AddTransition(previousState, AnimatorConditionMode.IfNot, animVarMenuOpened, true);
 
                 }
             }
@@ -363,7 +363,7 @@ namespace Myy
                 StateMachineSetupFireRate(machines[(int)MachineIndex.PARTICLES_FIRERATE_ON_MENU_OPENED]);
         }
 
-        public void AttachHierarchy(GameObject avatar)
+        public void AttachToHierarchy(GameObject avatar)
         {
             ParticleEmitterSetup(additionalHierarchy, fixedObject);
             additionalHierarchy.transform.position = fixedObject.transform.position;

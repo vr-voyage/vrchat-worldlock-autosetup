@@ -9,6 +9,12 @@ using VRC.SDK3.Avatars.Components;
 
 namespace Myy
 {
+    [System.Serializable]
+    public struct PinnedObjectConstraint
+    {
+        public GameObject gameObject;
+        public bool lockAtWorldCenter;
+    };
 
     public class SetupObjectConstraints : SetupObject
     {
