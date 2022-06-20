@@ -112,7 +112,6 @@ namespace Myy
                  */
                 if (menuParams.parameters == null)
                 {
-                    Debug.LogWarning("?? The menu parameters were not setup correctly ??");
                     MyyVRCHelpers.ResetParameters(menuParams);
                 }
 

@@ -142,38 +142,6 @@ namespace Myy
             renderer.material = newMat;
         }
 
-
-
-
-
-        private bool GenerateAnimations(
-            MyyAssetsManager assets,
-            AnimationClip[] animationsClips,
-            params (int index, string name, AnimProperties curves)[] animations)
-        {
-
-            List<AnimationClip> localClips = new List<AnimationClip>(animationsClips.Length);
-            foreach (var animation in animations)
-            {
-                AnimationClip clip = new AnimationClip() { name = animation.name };
-                clip.SetCurves(animation.curves);
-                localClips.Add(clip);
-            }
-
-            /* Now all the clips are generated, let's add them */
-            int generatedClips = localClips.Count;
-            for (int i = 0; i < generatedClips; i++)
-            {
-                var clip = localClips[i];
-                animationsClips[animations[i].index] = clip;
-                assets.GenerateAsset(clip, $"{clip.name}.anim");
-            }
-            return true;
-        }
-
-
-       
-
         private bool GenerateOnOffAnims()
         {
 

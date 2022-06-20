@@ -28,8 +28,6 @@ namespace Myy
         public GameObject[] worldLockedObjects = new GameObject[1];
         public UnityEngine.Object saveDir;
 
-        public bool lockAtWorldCenter = false;
-
         /* The 'Reset avatar' menu control is automatically
          * appended, after building the avatar.
          * So you can't see it when checking the avatar in
@@ -207,7 +205,12 @@ namespace Myy
         {
             if (Application.isPlaying) return;
 
-
+            GUILayout.Space(24);
+            if (GUILayout.Button(Translate(StringID.Button_ResetPanel), GUILayout.MaxWidth(64)))
+            {
+                ResetFormData();
+            }
+            GUILayout.Space(24);
 
             if (ui.DrawFields())
             {
@@ -216,7 +219,7 @@ namespace Myy
                 {
                     ConstraintsGlobalOptions options = new ConstraintsGlobalOptions()
                     {
-                        lockAtWorldOrigin = false
+                        lockAtWorldOrigin = lockAtWorldOrigin
                     };
                     string saveDirPath = AssetDatabase.GetAssetPath(saveDir);
                     SetupAvatarConstraints setupTool = new SetupAvatarConstraints();
@@ -225,11 +228,7 @@ namespace Myy
                 }
             }
 
-            GUILayout.Space(240);
-            if (GUILayout.Button(Translate(StringID.Button_ResetPanel)))
-            {
-                ResetFormData();
-            }
+
             
 
             /* Handle Drag & Drop */

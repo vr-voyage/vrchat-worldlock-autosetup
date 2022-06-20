@@ -9,6 +9,7 @@ using VRC.SDK3.Avatars.Components;
 
 namespace Myy
 {
+    using static MyyAnimHelpers;
     [System.Serializable]
     public struct PinnedObjectConstraint
     {
@@ -66,7 +67,10 @@ namespace Myy
             {
 
                 GameObject newProxy = UnityEngine.Object.Instantiate(original, proxyParent.transform);
+                /* Ensure the name is unique */
+                newProxy.name += $"-{newProxy.GetInstanceID()}";
 
+                /* If none removed, none were found */
                 if (original.RemoveComponents<VRCStation>() == false)
                 {
                     MyyLogger.LogWarning($"In the end, no stations were found on object {original.name}");
@@ -85,6 +89,12 @@ namespace Myy
                     collider.isTrigger = true;
                 }
 
+                /* Zero the position and rotation, since it will move
+                 * using a Parent Constraint */
+                /* Don't reset the scale, as it won't be set by
+                 * the parent constraint, and this might affect the collider */
+                newProxy.transform.localPosition = Vector3.zero;
+                newProxy.transform.localRotation = Quaternion.identity;
                 newProxy.RemoveChildren();
                 newProxy.KeepOnlyComponents(typeof(VRCStation), typeof(Collider));
                 newProxy.GetComponent<VRCStation>().enabled = false;
@@ -317,8 +327,34 @@ namespace Myy
         {
             string containerPath = PathToContainer();
 
+
+            if (!lockAtWorldCenter)
+            {
+                string constraintPath = PathToParentConstraint();
+                GenerateAnimations(assetManager, clips,
+                    ((int)ClipIndex.OFF, "OFF", new AnimProperties(
+                        (containerPath,  typeof(GameObject),       "m_IsActive", ConstantCurve(false)),
+                        (constraintPath, typeof(ParentConstraint), "m_Active",   ConstantCurve(true))
+                    )),
+                    ((int)ClipIndex.ON, "ON", new AnimProperties(
+                        (containerPath,  typeof(GameObject),       "m_IsActive", ConstantCurve(true)),
+                        (constraintPath, typeof(ParentConstraint), "m_Active",   ConstantCurve(false))
+                    )));
+            }
+            else
+            {
+                GenerateAnimations(assetManager, clips,
+                    ((int)ClipIndex.OFF, "OFF", new AnimProperties(
+                        (containerPath, typeof(GameObject), "m_IsActive", ConstantCurve(false))
+                    )),
+                    ((int)ClipIndex.ON, "ON", new AnimProperties(
+                        (containerPath, typeof(GameObject), "m_IsActive", ConstantCurve(true))
+                    )));
+            }
+
+
             /* TODO Find a better way to factorize this */
-            (ClipIndex index, string name, bool containerState,  bool constraintState)[]
+            /*(ClipIndex index, string name, bool containerState,  bool constraintState)[]
             animationValues = {
                 (ClipIndex.ON,  "ON",   true, false),
                 (ClipIndex.OFF, "OFF", false, true)
@@ -326,12 +362,9 @@ namespace Myy
 
             foreach (var clipInfos in animationValues)
             {
-                AnimationClip clip = new AnimationClip()
-                {
-                    name = clipInfos.name
-                };
+                AnimationClip clip = new AnimationClip() { name = clipInfos.name };
 
-                clip.SetCurve(containerPath,  typeof(GameObject), "m_IsActive",      clipInfos.containerState);
+                clip.SetCurve(containerPath, typeof(GameObject), "m_IsActive", clipInfos.containerState);
                 
                 if (!lockAtWorldCenter)
                 {
@@ -340,7 +373,7 @@ namespace Myy
 
                 assetManager.GenerateAsset(clip, $"{clip.name}.anim");
                 clips[(int)clipInfos.index] = clip;
-            }
+            }*/
 
             return true;
         }
@@ -352,24 +385,8 @@ namespace Myy
             AnimatorState objectOFF = machineOnOff.AddState("OFF", clips[(int)ClipIndex.OFF]);
             AnimatorState objectON = machineOnOff.AddState("ON", clips[(int)ClipIndex.ON]);
 
-            objectOFF.AddTransition(objectON, paramName, AnimatorConditionMode.If, 1);
-            objectON.AddTransition(objectOFF, paramName, AnimatorConditionMode.IfNot, 1);
-            /*objectOFF.motion = clips[(int)ClipIndex.OFF];
-            objectOFF.writeDefaultValues = false;*/
-
-            
-            /*objectON.motion = clips[(int)ClipIndex.ON];
-            objectON.writeDefaultValues = false;*/
-
-
-
-            /*AnimatorStateTransition OFFON = objectOFF.AddTransition(objectON, false);
-            MyyAnimHelpers.SetTransitionInstant(OFFON);
-            OFFON.AddCondition(AnimatorConditionMode.If, 1, paramName);
-
-            AnimatorStateTransition ONOFF = objectON.AddTransition(objectOFF, false);
-            MyyAnimHelpers.SetTransitionInstant(ONOFF);
-            ONOFF.AddCondition(AnimatorConditionMode.IfNot, 1, paramName);*/
+            objectOFF.AddTransition(objectON, AnimatorConditionMode.If, paramName, true);
+            objectON.AddTransition(objectOFF, AnimatorConditionMode.IfNot, paramName, true);
 
             machineOnOff.name = MyyAssetsManager.FilesystemFriendlyName(paramName + "-" + nameInMenu);
 

@@ -93,8 +93,10 @@ namespace Myy
 
             for (int i = 0; i < nObjects; i++)
             {
-                objects[i] = new SetupObjectConstraints(objectsToFix[i], variableNamePrefix + i);
-                objects[i].lockAtWorldCenter = lockAtWorldCenter;
+                objects[i] = new SetupObjectConstraints(objectsToFix[i], variableNamePrefix + i)
+                {
+                    lockAtWorldCenter = lockAtWorldCenter
+                };
             }
 
         }
@@ -120,7 +122,6 @@ namespace Myy
                 */
             if (parameters.parameters == null)
             {
-                Debug.LogWarning("??? Why was the menu not created correctly ???");
                 MyyVRCHelpers.ResetParameters(parameters);
             }
 
@@ -178,10 +179,12 @@ namespace Myy
 
                 if (param == null)
                 {
-                    param = new AnimatorControllerParameter();
-                    param.name = variableName;
-                    param.type = AnimatorControllerParameterType.Bool;
-                    param.defaultBool = false;
+                    param = new AnimatorControllerParameter
+                    {
+                        name = variableName,
+                        type = AnimatorControllerParameterType.Bool,
+                        defaultBool = false
+                    };
                 }
                 controller.AddParameter(param);
 
