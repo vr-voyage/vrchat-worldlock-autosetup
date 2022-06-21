@@ -90,6 +90,12 @@ namespace Myy
             mainModule.loop = true;
             mainModule.startLifetime = particleLifeTimeSeconds;
 
+            mainModule.startSize3D = true;
+            Vector3 fixedObjectScale = meshProvider.transform.localScale;
+            mainModule.startSizeX = fixedObjectScale.x;
+            mainModule.startSizeY = fixedObjectScale.y;
+            mainModule.startSizeZ = fixedObjectScale.z;
+
             mainModule.startRotation3D = true;
             Vector3 fixedObjectRotation = meshProvider.transform.rotation.eulerAngles;
             mainModule.startRotationX = Mathf.Deg2Rad * fixedObjectRotation.x;
