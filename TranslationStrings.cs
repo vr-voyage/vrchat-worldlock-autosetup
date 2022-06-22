@@ -43,11 +43,11 @@ namespace Myy
             [StringID.Label_ObjectToLock] = "Object to lock",
             [StringID.Label_ObjectsToLock] = "Objects to lock",
             [StringID.Label_ConstraintsOptions] = "Constraints options",
-            [StringID.Label_LockAtWorldOrigin] = "Pin the object from world origin (0,0,0)",
+            [StringID.Label_LockAtWorldOrigin] = "Lock from world (0,0,0)",
             [StringID.Label_SaveDirectory] = "Save files to",
             [StringID.Tooltip_LockAtWorldOrigin] =
-                "By default, pinned objects will stay relative to the avatar coordinates at the pin time.\n" +
-                "When activating this option, pinned objects will stay relative to the world origin (0,0,0).",
+                "By default, pinned objects will appear relative to the avatar coordinates when enabled.\n" +
+                "Activating this option will make the pinned objects always appear relative to the world origin (0,0,0).",
             [StringID.Message_SelectAvatarToConfigure] = "Select the avatar to configure",
             [StringID.Message_InvalidSaveFolderProvided] =
                 "The object provided is not a folder, and has no save folder associated.",
@@ -96,7 +96,7 @@ namespace Myy
 
         };
 
-        public static Dictionary<StringID, string> currentTranslation = messagesJP;
+        public static Dictionary<StringID, string> currentTranslation = messages;
 
         /* FIXME Use get/set */
         /* FIXME Make the type a specific type. Implement the function on it. */
@@ -111,9 +111,9 @@ namespace Myy
         {
             return string.Format(currentTranslation[stringID], objects);
         }
-        
 
-        
+
+
 
     }
 }
