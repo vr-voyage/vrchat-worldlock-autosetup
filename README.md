@@ -94,15 +94,15 @@ Note :
   the orientation of the spawned item ignores the orientation of the
   avatar.  
   That means that spawned item will always have the same orientation.  
-  This is why a "Rotate" button was added, to change the spawned
-  orientation.
+  This is why, to change the spawned orientation, a "Rotate" button
+  was added.
 - At best, Quest avatars will see their rating drop to **Poor** when
   using a Particle Emitter.  
   If the spawned item has more than 200 (two hundred) polygons,
   the rating will automatically downgrade to **Very Poor**.  
   You should take this seriously when it comes to Quest Avatars,
   since Quest clients are setup to always display "Fallback" avatars
-  instead of Very Poor avatars.  
+  instead of **Very Poor** rated avatars.  
   Meaning that other users won't see your setup avatar unless they
   manually choose "Show avatar".
 - You can only use ONE material to define the look of the spawned item.
@@ -125,7 +125,7 @@ https://user-images.githubusercontent.com/84687350/128454290-41b096f6-5657-4ec5-
   avatar, to define how it should appear when shown.
 * The **Expression menu** buttons will show the item names as set
   in the **Hierarchy**.  
-  So, set them accordingly.
+  So, set those names accordingly.
 
 * Open the setup window
   **Voyage > World Lock Setup - Constraints (PC)**.
@@ -140,8 +140,10 @@ items you just setup.
 
 https://user-images.githubusercontent.com/84687350/128454320-78cb2eb1-1556-4a7e-888d-b442904e48ae.mov
 
-This new clone will have a new submenu button "World Objects"
-with Toggle buttons allowing you to spawn each individual object.
+This new clone will have a new submenu "World Objects" added to
+its **Expressions menu**.
+This menu contains Toggle buttons allowing you to spawn each
+individual object.  
 
 Note:
 - You can setup up to 8 individual items (Only 8 items for now,
