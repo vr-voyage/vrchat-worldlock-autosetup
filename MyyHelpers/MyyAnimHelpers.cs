@@ -10,174 +10,41 @@ using System.Linq;
 
 namespace Myy
 {
-    public struct MyyAnimCurve
-    {
-        public string propPath;
-        public Type propType;
-        public string prop;
-        public AnimationCurve curve;
 
-        /**
-         * <summary>
-         * Create a MyyAnimCurve affecting a specific
-         * object component's property with an animation curve.
-         * </summary>
-         * 
-         * <remarks>
-         * <para>
-         * This is mainly used for simpe animations with basic curves
-         * setting a specific serialized property of an object.
-         * </para>
-         *
-         * <para>To create an AnimationClip using this curve, check :
-         * <seealso cref="MyyAnimHelpers.CreateClip(string, MyyAnimCurve[])"/>
-         * </para>
-         * </remarks>
-         * 
-         * <param name="providedPropPath">
-         * The relative path of the object, in the animated object hierarchy
-         * </param>
-         * 
-         * <param name="providedPropType">
-         * The targeted object component to affect with the animation curve
-         * </param>
-         * 
-         * <param name="propName">
-         * The serialized property name of the component to change with the animation
-         * </param>
-         * 
-         * <param name="providedCurve">
-         * The curve defining the change over time
-         * </param>
-         * 
-         * <returns>
-         * A MyyAnimCurve that can be used to change an object component property
-         * over time.
-         * </returns>
-         */
-        public MyyAnimCurve(
-            string providedPropPath,
-            Type providedPropType,
-            string propName,
-            AnimationCurve providedCurve)
-        {
-            this.propPath = providedPropPath;
-            this.propType = providedPropType;
-            this.prop = propName;
-            this.curve = providedCurve;
-        }
 
-        public static MyyAnimCurve[] Curves(
-            params MyyAnimCurve[] curves)
-        {
-            return curves;
-        }
-        /**
-         * <summary>
-         * Create a MyyAnimCurve setting a specific
-         * component's property to a constant value.
-         * </summary>
-         * 
-         * <remarks>
-         * <para>
-         * This is mainly used for simple animations setting up
-         * component fields to a specific value.
-         * </para>
-         * 
-         * <para>To create an AnimationClip using this curve, check :
-         * <seealso cref="MyyAnimHelpers.CreateClip(string, MyyAnimCurve[])"/>
-         * </para>
-         * 
-         * </remarks>
-         * 
-         * <param name="providedPropPath">
-         * The relative path of the object, in the animated object hierarchy
-         * </param>
-         * 
-         * <param name="providedPropType">
-         * The targeted object component to affect with the animation curve
-         * </param>
-         * 
-         * <param name="propName">
-         * The serialized property name of the component to change with the animation
-         * </param>
-         * 
-         * <param name="constantValue">
-         * The property constant value during the animation
-         * </param>
-         * 
-         * <returns>
-         * A MyyAnimCurve that can be used to change an object component property
-         * over time.
-         * </returns>
-         */
-        public MyyAnimCurve(
-            string providedPropPath,
-            Type providedPropType,
-            string propName,
-            float constantValue)
-        {
-            this.propPath = providedPropPath;
-            this.propType = providedPropType;
-            this.prop = propName;
-            this.curve = MyyAnimHelpers.ConstantCurve(constantValue);
-        }
-
-        /**
-         * <summary>Create a MyyAnimCurve activating/disabling an object.</summary>
-         * 
-         * <remarks>
-         * <para>
-         * The relative path is basically the combination of the targeted object
-         * parents names, with '/' between each name.
-         * </para>
-         * <para>
-         * Use an empty string if you're targeting the animated object itself.
-         * </para>
-         * 
-         * <para>To create an AnimationClip using this curve, check :
-         * <seealso cref="MyyAnimHelpers.CreateClip(string, MyyAnimCurve[])"/>
-         * </para>
-         * 
-         * </remarks>
-         * 
-         * 
-         * 
-         * <param name="objectPath">
-         * The relative path of the object to enable/disable,
-         * in the animated object hierarchy.
-         * </param>
-         * 
-         * <param name="isActive">
-         * The same argument you'll pass to GameObject.SetActive(bool)
-         * </param>
-         * 
-         * <returns>
-         * A MyyAnimCurve that can be used to activating/disable an object
-         * in animation clip.
-         * </returns>
-         */
-        public static MyyAnimCurve CreateSetActive(string objectPath, bool isActive)
-        {
-            return new MyyAnimCurve(
-                objectPath,
-                typeof(GameObject),
-                "m_IsActive",
-                MyyAnimHelpers.ConstantCurve(isActive));
-        }
-
-    }
-
-    /* FIXME Finish the ainmations setup function */
+    /**
+     * Used with GenerateAnimations to factorize animation clip generation.
+     * Since this is pretty much an "internal" function, this might be
+     * moved away from this library at some point.
+     */
     public struct AnimProperties
     {
         (string path, System.Type type, string fieldName, AnimationCurve curve)[] curves;
 
+        /**
+         * <summary>Define animation properties, using LISP like syntax.
+         * 
+         * <example>
+         * Example :
+         * <code>
+         * new AnimProperties(
+         *   ("Body", typeof(SkinnedMeshRenderer), "blendShape.vrc.v_aa", ConstantCurve(1)),
+         *   ("Body", typeof(SkinnedMeshRenderer), "blendShape.eye_stars", ConstantCurve(1))
+         * )
+         * </code>
+         * </example>
+         * </summary>
+         */
         public AnimProperties(params (string path, System.Type type, string fieldName, AnimationCurve value)[] curves)
         {
             this.curves = curves;
         }
 
+        /**
+         * <summary>Add the properties to an animation clip</summary>
+         * 
+         * <param name="clip">The clip to add these properties to.</param>
+         */
         public void AddTo(AnimationClip clip)
         {
             foreach (var curve in curves)
@@ -268,77 +135,6 @@ namespace Myy
             clip.SetCurve(objectPath, type, $"{propertyName}.y", constantValue.y);
             clip.SetCurve(objectPath, type, $"{propertyName}.z", constantValue.z);
         }
-
-        /**
-         * <summary>Extends AnimationClip to be able to set MyyAnimCurve objects.</summary>
-         * 
-         * <remarks>
-         * Might be removed soon...
-         * </remarks>
-         * 
-         * <params>
-         * <param name="clip">The clip to set animation curves too</param>
-         * <param name="curves">The animation curves to set, as MyyAnimCurve objects</param>
-         * </params>
-         * 
-         */
-        public static void SetCurves(this AnimationClip clip, params MyyAnimCurve[] curves)
-        {
-            foreach (MyyAnimCurve curve in curves)
-            {
-                clip.SetCurve(curve.propPath, curve.propType, curve.prop, curve.curve);
-            }
-        }
-
-        public static void SetCurves(this AnimationClip clip, AnimProperties properties)
-        {
-            properties.AddTo(clip);
-        }
-
-        /**
-         * <summary>Extends AnimationClip to be able to set MyyAnimCurve objects.</summary>
-         * 
-         * <remarks>
-         * Might be removed soon...
-         * </remarks>
-         * 
-         * <params>
-         * <param name="clip">The clip to set animation curves too</param>
-         * <param name="curves">The animation curves to set, as MyyAnimCurve objects</param>
-         * </params>
-         * 
-         */
-
-        public static void SetCurves(this AnimationClip clip, IEnumerable<MyyAnimCurve> curves)
-        {
-            clip.SetCurves(curves.ToArray());
-        }
-
-        /**
-         * <summary>Create an animation clip, using the
-         * provided MyyAnimCurve informations</summary>
-         * 
-         * <remarks>This is used to generate quick clips</remarks>
-         * 
-         * <param name="clipName">The name of the clip (AnimationClip.name)</param>
-         * <param name="curves">
-         * The curves defining the properties
-         * to animate, and their state over time.
-         * </param>
-         *
-         * <returns>An AnimationClip animating the properties as defined by the provided curves</returns>
-         */
-        public static AnimationClip CreateClip(string clipName, params MyyAnimCurve[] curves)
-        {
-            AnimationClip clip = new AnimationClip()
-            {
-                name = clipName
-            };
-            clip.SetCurves(curves);
-            return clip;
-        }
-
-
 
         /**
          * <summary>Create an animation 'Curve' for a floating-point value that should
@@ -495,6 +291,15 @@ namespace Myy
             };
         }
 
+        /**
+         * <summary>Add a state to a State Machine.</summary>
+         * 
+         * <param name="stateName">Name of the state, in the machine.</param>
+         * <param name="clip">Motion clip used by this state.</param>
+         * <param name="writeDefaults">Enable "Write Defaults" (Default OFF)</param>
+         * 
+         * <returns>The generated AnimatorState object.</returns>
+         */
         public static AnimatorState AddState(
             this AnimatorStateMachine machine,
             string stateName,
@@ -506,6 +311,16 @@ namespace Myy
             state.writeDefaultValues = writeDefaults;
             return state;
         }
+
+        /**
+         * <summary>Add a state to a State Machine.</summary>
+         * 
+         * <param name="stateName">Name of the state, in the machine.</param>
+         * <param name="tree">BlendTree used by this state.</param>
+         * <param name="writeDefaults">Enable "Write Defaults" (Default OFF)</param>
+         * 
+         * <returns>The generated AnimatorState object.</returns>
+         */
 
         public static AnimatorState AddState(
             this AnimatorStateMachine machine,
@@ -519,6 +334,28 @@ namespace Myy
             return state;
         }
 
+        /**
+         * <summary>Set the main timings of an animator state transition.</summary>
+         * 
+         * <remarks>
+         * <para>The exit time is normalized.</para>
+         * <para>1 means that the "depart" state motion will be played entirely
+         * before transitioning.</para>
+         * <para>0 means the transition will happen ASAP,
+         * skipping the "depart" state motion.</para>
+         * </remarks>
+         * 
+         * <param name="exitTime">
+         * Normalized exit time based on the depart state animator time.
+         * </param>
+         * <param name="duration">
+         * Transition duration in seconds.
+         * </param>
+         * 
+         * <returns>
+         * The configured AnimatorStateTransition for easy call-chaining.
+         * </returns>
+         */
         public static AnimatorStateTransition SetTimings(
             this AnimatorStateTransition transition,
             float exitTime,
@@ -528,6 +365,37 @@ namespace Myy
             transition.duration = duration;
             return transition;
         }
+
+        /**
+         * <summary>Add a condition to a transition.</summary>
+         * 
+         * <remarks>
+         * <para>The exit time is normalized.</para>
+         * <para>1 means that the "depart" state motion will be played entirely
+         * before transitioning.</para>
+         * <para>0 means the transition will happen ASAP,
+         * skipping the "depart" state motion.</para>
+         * </remarks>
+         * 
+         * <param name="paramName">
+         * Name of the animator parameter conditioning the transition.
+         * </param>
+         * <param name="condition">
+         * The condition.
+         * </param>
+         * <param name="threshold">
+         * The value compared to the animator parameter, using the provided condition.
+         * </param>
+         * <param name="exitTime">
+         * <para>Normalized exit time based on the depart state animator time.</para>
+         * <para>Default 0.</para>
+         * </param>
+         * <param name="duration">
+         * Transition duration in seconds.
+         * </param>
+         * 
+         * <returns>The configured transition.</returns>
+         */
 
         public static AnimatorStateTransition AddCondition(
             this AnimatorStateTransition transition,
@@ -541,6 +409,43 @@ namespace Myy
             return transition;
         }
 
+        /**
+         * <summary>Add a transition with a condition between two animator states.</summary>
+         * 
+         * <remarks>
+         * <para>The exit time is normalized.</para>
+         * <para>1 means that the "depart" state motion will be played entirely
+         * before transitioning.</para>
+         * <para>0 means the transition will happen ASAP,
+         * skipping the "depart" state motion.</para>
+         * </remarks>
+         * 
+         * <param name="paramName">
+         * Name of the animator parameter conditioning the transition.
+         * </param>
+         * <param name="condition">
+         * The condition.
+         * </param>
+         * <param name="threshold">
+         * The value compared to the animator parameter, using the provided condition.
+         * </param>
+         * <param name="defaultExitTime">
+         * <para>Should the transition have a default exit time ?</para>
+         * <para>Default false.</para>
+         * </param>
+         * <param name="exitTime">
+         * <para>Normalized exit time based on the depart state animator time.</para>
+         * <para>Default 0.</para>
+         * </param>
+         * <param name="duration">
+         * <para>Transition duration in seconds.</para>
+         * <para>Default 0.</para>
+         * </param>
+         * 
+         * <returns>
+         * The generated transition.
+         * </returns>
+         */
         public static AnimatorStateTransition AddTransition(
             this AnimatorState from,
             AnimatorState to,
@@ -556,6 +461,43 @@ namespace Myy
             return transition;
         }
 
+        /**
+         * <summary>Add a transition with a condition between two animator states.</summary>
+         * 
+         * <remarks>
+         * <para>The exit time is normalized.</para>
+         * <para>1 means that the "depart" state motion will be played entirely
+         * before transitioning.</para>
+         * <para>0 means the transition will happen ASAP,
+         * skipping the "depart" state motion.</para>
+         * </remarks>
+         * 
+         * <param name="paramName">
+         * Name of the animator parameter conditioning the transition.
+         * </param>
+         * <param name="condition">
+         * The condition.
+         * </param>
+         * <param name="threshold">
+         * The value compared to the animator parameter, using the provided condition.
+         * </param>
+         * <param name="defaultExitTime">
+         * <para>Should the transition have a default exit time ?</para>
+         * <para>Default false.</para>
+         * </param>
+         * <param name="exitTime">
+         * <para>Normalized exit time based on the depart state animator time.</para>
+         * <para>Default 0.</para>
+         * </param>
+         * <param name="duration">
+         * <para>Transition duration in seconds.</para>
+         * <para>Default 0.</para>
+         * </param>
+         * 
+         * <returns>
+         * The generated transition.
+         * </returns>
+         */
         public static AnimatorStateTransition AddTransition(
             this AnimatorState from,
             AnimatorState to,
@@ -570,6 +512,64 @@ namespace Myy
             transition.AddCondition(paramName, condition, threshold == true ? 1 : 0, exitTime, duration);
             return transition;
         }
+
+        /**
+         * <summary>Add animation properties defined as AnimProperties to an animation clip.</summary>
+         * 
+         * <remarks>
+         * This is just a more readable equivalent to properties.AddTo(clip).
+         * </remarks>
+         * 
+         * <param name="properties">
+         * Properties to add the clip.
+         * </param>
+         */
+        public static void SetCurves(this AnimationClip clip, AnimProperties properties)
+        {
+            properties.AddTo(clip);
+        }
+
+        /**
+         * <summary>Generate and store a set of animations clips based
+         * on the curves provided.
+         * 
+         * <example>
+         * <code>
+         *        GenerateAnimations(assetManager, clips,
+         *           ((int)ClipIndex.OFF, "OFF", new AnimProperties(
+         *               (containerPath,  typeof(GameObject),       "m_IsActive", ConstantCurve(false)),
+         *               (constraintPath, typeof(ParentConstraint), "m_Active",   ConstantCurve(true))
+         *           )),
+         *           ((int)ClipIndex.ON, "ON", new AnimProperties(
+         *               (containerPath,  typeof(GameObject),       "m_IsActive", ConstantCurve(true)),
+         *               (constraintPath, typeof(ParentConstraint), "m_Active",   ConstantCurve(false))
+         *           )));
+         * </code>
+         * </example>
+         * </summary>
+         * 
+         * <remarks>
+         * This is a function used to factorize internal code.
+         * This might be moved away from this library in the future.
+         * </remarks>
+         * 
+         * 
+         * <param name="assets">
+         * The asset manager used to generate the clip files.
+         * </param>
+         * <param name="animationsClips">
+         * An array storing the generated animation clips.
+         * </param>
+         * <param name="animations">
+         * <para>The properties of each animation.</para>
+         * <para>(index, "name", new AnimProperties(("objectPath", componentType, "propertyName", ValueCurve), ...))</para>
+         * </param>
+         * 
+         * <returns>
+         * true if everything went fine.
+         * false otherwise.
+         * </returns>
+         */
 
         public static bool GenerateAnimations(
             MyyAssetsManager assets,
