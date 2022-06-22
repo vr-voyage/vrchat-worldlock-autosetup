@@ -1,25 +1,32 @@
 # About
 
 This tool allows you to setup world-locked items on your avatar,
-meaning that the items won't move after making them appear.
-While plenty of documentation exist on how to setup such items,
+meaning that placed items won't move until you put them away.
+While plenty of documentation exist on how to setup items that way,
 the process is still tedious, so I made a tool that :
 
-* Setup the hierarchy
-* Create the animations
-* Setup the FX animator (creating it if it's doesn't exist)
-* Setup the SDK3 menu parameters
-* Add the SDK3 menu buttons
+* Setup the hierarchy.
+* Create the animations.
+* Setup the FX animator (creating it if it's doesn't exist).
+* Setup the SDK3 menu parameters.
+* Add the SDK3 menu buttons.
 
-As always, backup the items and avatars you'll use with this tool.
+The tool will copy the avatar, and any modified asset, and will
+perform modifications on these copies only.
+
+Still, as always, backup the items and avatars you'll use with
+this tool.
 I only tested it on MY avatars.
 So far, so long, no problems arised, but you might encounter bugs
 I haven't.
 
-Locking items with particles work on Quest, but it still pretty limited.
-If you don't want to have a "Very Poor" rated avatar, the limits are 200 polygons for Quest users, 2500 for PC users.
+Locking items with particles work with Quest avatars, but it still
+pretty limited.
+If you don't want to have a "Very Poor" rated avatar, the limits are
+200 polygons for Quest users, 2500 for PC users.
 
-Locking items with constraints has no such limitations but only work on PC at the moment.
+Locking items with constraints has no such limitations but only work
+on PC at the moment.
 
 # Requirements
 
