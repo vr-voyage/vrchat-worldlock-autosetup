@@ -239,8 +239,8 @@ namespace Myy
                 name = "RotateParticle",
                 children = new ChildMotion[]
                 {
-                    new ChildMotion() { motion = clips[(int)ClipIndex.ROTATE0], threshold = 0},
-                    new ChildMotion() { motion = clips[(int)ClipIndex.ROTATE360], threshold = 1}
+                    new ChildMotion() { motion = clips[(int)ClipIndex.ROTATE0],   threshold = 0, timeScale = 1},
+                    new ChildMotion() { motion = clips[(int)ClipIndex.ROTATE360], threshold = 1, timeScale = 1}
                 }
             };
             assetManager.GenerateAsset(rotationTree, "RotateParticle.asset");
