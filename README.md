@@ -39,7 +39,7 @@ See https://github.com/vr-voyage/vrchat-worldlock-autosetup/releases
 
 # Install
 
-* Either install [**ObjectsFixer.unitypackage**](https://github.com/vr-voyage/vrchat-worldlock-autosetup/releases/download/v1.2/ObjectWorldLocker-Japanese-Default.unitypackage)
+* Either install [**ObjectWorldLocker-English-Default.unitypackage**](https://github.com/vr-voyage/vrchat-worldlock-autosetup/releases/download/v1.2/ObjectWorldLocker-English-Default.unitypackage)
   using the editor menu **Assets > Import Package... > Custom Package...**.
 
 **OR**
@@ -173,30 +173,70 @@ MIT
 Meaning that, yes, You are free to incorporate this tool,
 or parts of it, into other commercial goods, open source projects, ...
 
+# 使い所
+
+普段、アバターに着けているアイテムは、アバターと共に移動します。  
+それでも、そのアイテムは出した後から、アバターと移動しないように設定出来ます。
+
+そういうアバターと共に移動しない、ワールドに固定されているようなアイテムは、
+「ワールド固定アイテム」と呼んでいます。
+
+アイテムを「ワールド固定アイテム」に変化するように、
+そしてExpressions Menuから、そのアイテム配置と収納できるように、
+二つの自動設定ツールを配布しています。
+各ツールは別の方法でアバターとアイテムを設けます。
+各方法はそれぞれのメリットとデメリットがあります。
+
+# 依存
+
+* Unity
+* VRChat Avatar SDK 3.0
+
+# インストール方法
+
+* [**ObjectWorldLocker-Japanese-Default.unitypackage**](https://github.com/vr-voyage/vrchat-worldlock-autosetup/releases/download/v1.2/ObjectWorldLocker-Japanese-Default.unitypackage)のファイルをダウンロードして
+* Unityの「**Assets > Import Package... > Custom Package...**」メニューアイテムを押下して、
+* ダウンロードしたファイルを開いた画面から開けてください。
+
 # 使い方
 
-## Particle Systemでアイテムを固定する機能をアバターに追加する手順
+二つのツールの基本使い方は簡単です：  
+「画面でアバターとアイテムを決めて、適用のボタンを押下する」。
+
+ボタンを押した後、アバターのワールド固定アイテムを出せるコピーが生成さます。
+
+そのコピーをアップロードした後、ゲーム内で着せたら、  
+Expressions Menuから、設置したアイテムを配置・収納できます。  
+配置しているアイテムは、ワールドに固定されているように、移動しません。
+
+## Particle Systemでアイテムを固定する機能をアバターに追加する
+
+### 説明動画
+
+[![Particlesの自動設定ツールの使い方](https://img.youtube.com/vi/4kGonrsPCVg/0.jpg)](https://www.youtube.com/watch?v=4kGonrsPCVg)
+
+### 手順
 
 PCとQuestアバター対応
 
-* まずは、SceneでSDK3.0のアバターを用意します。
-* アイテムを配置する時に、そのアイテムの位置がズレないように、
-  アバターの位置と回転度をゼロにします。
-* 後は、Sceneで固定したいアイテムを追加します。
-* アバターを基準にして、アイテムの位置を設定します。
+* まずは、Sceneの中にSDK3.0のアバターを用意します。
+* アイテムの配置場所がズレないように、
+  アバターのPositionとRotationをゼロにします。
+* 後は、Sceneに固定したいアイテムを追加します。
+* アバターを基準として、アイテムのPositionを決めます。
 * メニューバーで「Voyage > World Lock Setup - Particles (PC or Quest)」を押下して、
   自動設定画面を開きます。
 * 画面の左上にある「リセット」ボタンを押します。
 * Hierarchyからアバターとアイテムをドラッグして、その画面の上にドロップします。
 * 画面の下に現れた「適用」ボタンを押します。
 
-すると、アバターがコピーされて、そのコピーは設定されて、Sceneに追加されます。  
+すると、アバターの設定されているコピーが、Sceneに追加されます。  
 そのコピーをアップロードしたら、ゲーム内で、アイテムをワールドで召喚できます。  
 召喚したアイテムは、削除するまで、動きません。
 
 そのためにExpressionsメニューで、二つのボタンが追加されます：
 * Spawn - アイテムを召喚・削除するボタン。
-* Rotate - アイテムの回転度を決めるボタン。
+* Rotate - アイテムの方向を決めるボタン。
 
 > 回転度を変わると、配置場所がリセットされます。
 
@@ -204,30 +244,35 @@ PCとQuestアバター対応
 > パーティクルで配置されているアイテムの方向は
 > 「Rotate」ボタンで決めます。
 
+## Constraintsでアイテムを固定する機能をアバターに追加する
 
-## Constraints (束縛)でアイテムを固定する機能をアバターに追加する手順
+### 説明動画
+
+[![Constraintsの自動設定ツールの使い方](https://img.youtube.com/vi/hpTEYyTml0o/0.jpg)](https://www.youtube.com/watch?v=hpTEYyTml0o)
+
+### 手順
 
 PCアバター対応
 「Constraint」のコンポネントはQuest対応アバターで使えません。
 
-* まずは、SceneでSDK3.0のアバターを用意します。
+* まずは、Sceneの中にSDK3.0のアバターを用意します。
 * アイテムの配置場所がズレないように、
-  アバターの位置と回転度をゼロにします。
+  アバターのPositionとRotationをゼロにします。
 * 後は、Sceneに固定したいアイテムを追加します。
-* アバターを基準にして、アイテムの回転と位置を設定します。
+* アバターを基準として、アイテムのPositionとRotationを決めます。
 * 後は、メニューバーで「Voyage > World Lock Setup - Constraints (PC)」を押下して、
   自動設定ツールの画面を開きます。
 * 画面の左上にある「リセット」ボタンを押します。
 * Hierarchyからアバターとアイテムをドラッグして、その画面の上にドロップします。
 * 画面の下に現れた「適用」ボタンを押します。
 
-すると、アバターがコピーされて、そのコピーは設定されて、Sceneに追加されます。  
-そのコピーをアップロードしたら、ゲーム内で、アイテムをワールドに配置できます。  
-配置したアイテムは、収納されるまで、動きません。
+すると、アバターの設定されているコピーが、Sceneに追加されます。。  
+アップロードしたら、ゲーム内でそのコピーを使って、アイテムをワールドに配置できます。  
+配置したアイテムは、収納されるまで、移動しません。
 
 そのために、Expressionsメニューで、「World Objects」と言うサブメニューが追加されます。  
-そこで、それぞれのアイテムを出すために、ボタンがあります。  
-アイテムのボタンを押下すると、そのアイテムを配置します。  
+そこで、各アイテムを出すためのボタンがあります。  
+ボタンを押下すると、関連のアイテムを配置します。  
 もう一度押下すると、そのアイテムを収納します。
 
 # メリット・デメリット
@@ -245,6 +290,80 @@ PCアバター対応
 * **-** PC Only
 * **+** Ratingを低下しません。
 * **+** アバターの一部ですから、アバターが使えるComponentをアイテムに付けられます　(音楽、アニメーション、…）。
+
+# ワールド固定アイテムの設定方法
+
+アイテムを「ワールド固定アイテム」にするように、二つの方法がありますね。
+
+## Particle Emitter
+
+一つは、  
+アイテムを着けるより、  
+Particle Emitterを着けて、  
+そのParticleをアイテムに見えるように変化します。  
+後は、そのParticleを動かないように設定すると、ワールド固定アイテムに見えます。
+
+その方法はQuestアバターでも使えますが、Particle Emitterの重さのため、アバターのランキングがPoor以下になります。
+そして、結局アイテムを着けていません。  
+Particleがアイテムを化けていますね。  
+そのため、コンポネントを着けることは不可能です。  
+そして、マテリアルは一個しか使えません。  
+つまり、メリットは一つだけです：Quest対応アバターでも使えます。
+
+## 「Empty」と「Constraint」系のコンポネント
+
+もう一つの方法は、複数の「Empty Object」を用意して、  
+その「Empty Object」に「Constraint」コンポネントを着けて、  
+そして、アイテムをその「Empty　Object」の子供にします。
+
+「Constraint」コンポネントのお陰で、子供のアイテムをワールドに固定することができます。
+その方法のデメリットは一つだけです：
+「Constraint」のコンポネントをQuest対応アバターに着けることが出来ませんから、PCアバター・オンリーです。
+逆に、メリットは多いんです。
+まずは、そのComponentとEmptyはランキングを下がりません。
+そして、アイテム自体がほぼ変わりませんから、
+そのアイテムは「Contact Point」とか、「Animator」とか、「Audio Source」とか、
+許可されるコンポネント全部が使えます。
+
+## Stationsの整理方法
+
+「VRC　Station」　(以下　「Station」、また　椅子）　は自動的に整理されています。
+ですから、普通に使えますね。
+
+整理の理由のやり方はこちらです：
+
+「Station」のコンポネントを着けると、そのコンポネントは「Station Proxy」というオブジェクトに移動されます。
+理由は、そのツールがアバターにワールド固定アイテムを設定すると、そのアイテムを配置するまで無効します。
+
+VRChatでは、「Station」が着けているオブジェクトが無効になる後、その「Station」が壊れて、アバターをリロードするまで使えなくなります。
+その問題を防ぐために、そのツールは「Station」が着けている部分を複製して、
+普段無効にならないように、そのコピーをHierarchyの別の場所に移動します。
+後は、そのコピーから、ColliderとStation以外のコンポネントを抜けて、
+「Parent Constraint」を着けます。
+そのコピーはいつも有効なりますが、着けているコンポネントが普段無効になります。
+後は、アイテムを有効すると、そのコピーのコンポネントも有効になって、アイテムの「Station」にあった所に自動的に移動します。
+
+## 不具合
+
+### プレイヤーによってのズレ
+
+（「ワールド原点から固定する」オプションを有効したら、その問題が発生しません）
+
+含んだAnimationはアイテムの配置と固定を決めます。
+
+つまり、リモート・プレイヤーの皆さんがアバターのAnimationを再生する後、そのプレイヤーのワールドで、アイテムが現れて、固定になります。
+そのAnimationはアバターがロードされている後から再生できます。その前は不可能です。
+
+周りのプレイヤーの皆さんが、そのアバターのAnimationを同じ所から再生すると、
+そのアイテムは同じ所に現れますね。
+
+逆に、アイテムを配置した後、アバターが移動したら、
+そして新しいプレイヤーが来たら、
+その「新しいプレイヤー」さんはアバターのAnimationを移動した場所から再生します。
+結果は、アイテムが現れますが、他のプレイヤーと比べると、その配置の所がズレていることになります。
+
+アイテムを再び収納・配置すると、そのズレがなくなるはずですが、
+Animationが再生している場所が固定アイテムの位置に影響があることを忘れないでください。
 
 # 質問
 
