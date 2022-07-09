@@ -209,7 +209,7 @@ MIT
 Meaning that, yes, You are free to incorporate this tool,
 or parts of it, into other commercial goods, open source projects, ...
 
-# Questions
+# FAQ
 
 **Can I change the name of the files generated ?**
 Yes.
@@ -235,9 +235,9 @@ issues with the animators.
 # 日本語版
 
 
-#　ワールド固定アイテム自動設定ツール
+# ワールド固定アイテム自動設定ツール
 
-数クリックだけで、ワールドに固定できるアイテムをアバターへ自動設定する２つのツールです。
+数クリックだけで、ワールドに固定できるアイテムをアバターへ自動設定する２つのツールです。  
 装備したアバターのExpression Menuにボタンが追加され、そのボタンでアイテムを配置・収納できます。
 
 詳しくは動画をご覧ください。
