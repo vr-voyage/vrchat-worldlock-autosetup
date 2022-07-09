@@ -43,7 +43,7 @@ namespace Myy
             [StringID.Label_ObjectToLock] = "Object to lock",
             [StringID.Label_ObjectsToLock] = "Objects to lock",
             [StringID.Label_ConstraintsOptions] = "Constraints options",
-            [StringID.Label_LockAtWorldOrigin] = "Lock from world (0,0,0)",
+            [StringID.Label_LockAtWorldOrigin] = "Lock from world origin",
             [StringID.Label_SaveDirectory] = "Save files to",
             [StringID.Tooltip_LockAtWorldOrigin] =
                 "By default, pinned objects will appear relative to the avatar coordinates when enabled.\n" +
