@@ -27,7 +27,8 @@ namespace Myy
             Message_SelectObjectToConfigure,
             Message_SelectObjectsToConfigure,
             Button_SetupNewAvatar,
-            Button_ResetPanel
+            Button_ResetPanel,
+            Button_InspectExpressionMenu
         }
 
         enum Lang
@@ -52,9 +53,9 @@ namespace Myy
             [StringID.Message_InvalidSaveFolderProvided] =
                 "The object provided is not a folder, and has no save folder associated.",
             [StringID.Message_InsufficientSpaceMainMenu] =
-                "This tool will add {0} controls to the main menu.\n" +
-                "Please ensure that this avatar has less than {1} controls.\n" +
-                "Else, this script won't be able to add its own controls.",
+                "This avatar Expression menu is full.\n" +
+                "In order to add {0} additional controls,\n" +
+                "Reduce its main menu to {1} controls.",
             [StringID.Message_SelectObjectToConfigure] =
                 "Select the object to setup.\n" +
                 "Just drop it on top of this window",
@@ -62,7 +63,8 @@ namespace Myy
                 "Select at least one object to setup.\n" +
                 "You can drop the objects to configure inside this window.",
             [StringID.Button_SetupNewAvatar] = "APPLY",
-            [StringID.Button_ResetPanel] = "RESET"
+            [StringID.Button_ResetPanel] = "RESET",
+            [StringID.Button_InspectExpressionMenu] = "Open the Menu in the Inspector"
 
         };
 
@@ -82,9 +84,9 @@ namespace Myy
             [StringID.Message_InvalidSaveFolderProvided] =
                 "選んだ物はフォルダーじゃない。そして保存先もありません。",
             [StringID.Message_InsufficientSpaceMainMenu] =
-                "このツールは{0}個のメニューアイテムを追加します。\n" +
-                "選んだアバターのは今多すぎて、新しいを追加できません。\n" +
-                "そのため、アバターのメニューアイテムを{1}個まで減らしてください。",
+                "そのAvatarのExpression Menuは一杯です。\n" +
+                "{0}個の操作ボタンを追加できるように、\n" +
+                "MenuのControlsを{1}個まで減らしてください！",
             [StringID.Message_SelectObjectToConfigure] =
                 "固定したいアイテムを選んでください。\n" +
                 "ヒエラルキーから、その画面にドロップしてよろしいです。",
@@ -92,11 +94,12 @@ namespace Myy
                 "固定したいアイテムを選んでください。\n" +
                 "ヒエラルキーから、その画面にドロップしてよろしいです。",
             [StringID.Button_SetupNewAvatar] = "適用",
-            [StringID.Button_ResetPanel] = "リセット"
+            [StringID.Button_ResetPanel] = "リセット",
+            [StringID.Button_InspectExpressionMenu] = "MenuをInspectorで開く"
 
         };
 
-        public static Dictionary<StringID, string> currentTranslation = messages;
+        public static Dictionary<StringID, string> currentTranslation = messagesJP;
 
         /* FIXME Use get/set */
         /* FIXME Make the type a specific type. Implement the function on it. */
@@ -111,7 +114,6 @@ namespace Myy
         {
             return string.Format(currentTranslation[stringID], objects);
         }
-
 
 
 

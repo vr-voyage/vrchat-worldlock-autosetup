@@ -5,6 +5,7 @@ using UnityEditor;
 using VRC.SDK3.Avatars.Components;
 using System.Collections.Generic;
 using System;
+using VRC.SDK3.Avatars.ScriptableObjects;
 
 namespace Myy
 {
@@ -28,15 +29,7 @@ namespace Myy
         public GameObject[] worldLockedObjects = new GameObject[1];
         public UnityEngine.Object saveDir;
 
-        /* The 'Reset avatar' menu control is automatically
-         * appended, after building the avatar.
-         * So you can't see it when checking the avatar in
-         * Edit mode.
-         * Since it's extremely useful, we account for it.
-         */
-        const int N_CONTROLS_HIDDEN = 1;
         const int N_CONTROLS_ADDED = 1;
-        const int N_CONTROLS_MAX = 8;
 
         SimpleEditorUI ui;
 
@@ -53,7 +46,7 @@ namespace Myy
             }
             if (!avatar.customExpressions) return true;
 
-            int maxControlsAuthorized = N_CONTROLS_MAX - N_CONTROLS_HIDDEN - N_CONTROLS_ADDED;
+            int maxControlsAuthorized = VRCExpressionsMenu.MAX_CONTROLS - N_CONTROLS_ADDED;
             if (avatar.expressionsMenu.controls.Count > maxControlsAuthorized)
             {
                 EditorGUILayout.HelpBox(
@@ -61,6 +54,10 @@ namespace Myy
                         StringID.Message_InsufficientSpaceMainMenu,
                         N_CONTROLS_ADDED, maxControlsAuthorized),
                     MessageType.Error);
+                if (GUILayout.Button(Translate(StringID.Button_InspectExpressionMenu)))
+                {
+                    AssetDatabase.OpenAsset(avatar.expressionsMenu);
+                }
                 return false;
             }
 
