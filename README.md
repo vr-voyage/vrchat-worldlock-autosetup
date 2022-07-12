@@ -58,7 +58,7 @@ See https://github.com/vr-voyage/vrchat-worldlock-autosetup/releases
 
 # Install
 
-* Either install [**ObjectWorldLocker-English-Default.unitypackage**](https://github.com/vr-voyage/vrchat-worldlock-autosetup/releases/download/v1.2/ObjectWorldLocker-English-Default.unitypackage)
+* Either install [**WorldLockAutosetup-20220712-en.unitypackage**](https://github.com/vr-voyage/vrchat-worldlock-autosetup/releases/download/v1.2.2/WorldLockAutosetup-20220712-en.unitypackage)
   using the editor menu **Assets > Import Package... > Custom Package...**.
 
 **OR**
@@ -270,7 +270,7 @@ issues with the animators.
 
 # インストール方法
 
-* [**ObjectWorldLocker-Japanese-Default.unitypackage**](https://github.com/vr-voyage/vrchat-worldlock-autosetup/releases/download/v1.2/ObjectWorldLocker-Japanese-Default.unitypackage)のファイルをダウンロードして
+* [**WorldLockAutosetup-20220712-jp.unitypackage**](https://github.com/vr-voyage/vrchat-worldlock-autosetup/releases/download/v1.2.2/WorldLockAutosetup-20220712-jp.unitypackage)のファイルをダウンロードして
 * Unityの「**Assets > Import Package... > Custom Package...**」メニューアイテムを押下して、
 * ダウンロードしたファイルを開いた画面から開けてください。
 
