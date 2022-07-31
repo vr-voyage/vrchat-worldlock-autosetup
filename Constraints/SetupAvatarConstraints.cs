@@ -5,6 +5,7 @@ using System;
 using VRC.SDK3.Avatars.Components;
 using UnityEditor.Animations;
 using VRC.SDK3.Avatars.ScriptableObjects;
+using UnityEditor;
 
 namespace Myy
 {
@@ -197,6 +198,11 @@ namespace Myy
 
             /* FIXME Let the user define the last parameter */
             MyyVRCHelpers.VRCMenuAddSubMenu(menu, subMenu, "World Objects");
+
+            EditorUtility.SetDirty(menu);
+            EditorUtility.SetDirty(subMenu);
+            EditorUtility.SetDirty(parameters);
+            AssetDatabase.SaveAssets();
 
             avatarCopy.gameObject.SetActive(true);
         }

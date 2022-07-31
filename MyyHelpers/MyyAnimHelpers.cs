@@ -227,7 +227,19 @@ namespace Myy
             layer.stateMachine = stateMachine;
             layer.name = stateMachine.name;
             layer.defaultWeight = 1;
-            AssetDatabase.AddObjectToAsset(layer.stateMachine, AssetDatabase.GetAssetPath(controller));
+
+            AssetDatabase.AddObjectToAsset(layer.stateMachine, controller);
+            foreach (var graphicalState in stateMachine.states)
+            {
+                var state = graphicalState.state;
+                
+                AssetDatabase.AddObjectToAsset(state, controller);
+                foreach (var transition in state.transitions)
+                {
+                    AssetDatabase.AddObjectToAsset(transition, controller);
+                }
+            }
+            
             controller.AddLayer(layer);
         }
 

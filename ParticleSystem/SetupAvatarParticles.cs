@@ -5,6 +5,7 @@ using System;
 using VRC.SDK3.Avatars.Components;
 using UnityEditor.Animations;
 using VRC.SDK3.Avatars.ScriptableObjects;
+using UnityEditor;
 
 namespace Myy
 {
@@ -157,6 +158,11 @@ namespace Myy
                 }
                 toAttach.CopyAnimationParameters(menuParams);
                 toAttach.VRCMenuAddButtons(menu);
+
+                EditorUtility.SetDirty(menu);
+                EditorUtility.SetDirty(subMenu);
+                EditorUtility.SetDirty(menuParams);
+                AssetDatabase.SaveAssets();
 
                 avatarCopy.gameObject.SetActive(true);
             }

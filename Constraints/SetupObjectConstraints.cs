@@ -382,6 +382,7 @@ namespace Myy
         {
             string paramName = parameters[(int)ParameterIndex.ONOFF].name;
 
+
             AnimatorState objectOFF = machineOnOff.AddState("OFF", clips[(int)ClipIndex.OFF]);
             AnimatorState objectON = machineOnOff.AddState("ON", clips[(int)ClipIndex.ON]);
 
