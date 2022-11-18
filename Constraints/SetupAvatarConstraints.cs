@@ -87,17 +87,14 @@ namespace Myy
             return atLeastOnePrepared;
         }
 
-        private void GenerateSetup(GameObject[] objectsToFix, bool lockAtWorldCenter)
+        private void GenerateSetup(GameObject[] objectsToFix, ConstraintsGlobalOptions options)
         {
             int nObjects = objectsToFix.Length;
             objects = new SetupObjectConstraints[nObjects];
 
             for (int i = 0; i < nObjects; i++)
             {
-                objects[i] = new SetupObjectConstraints(objectsToFix[i], variableNamePrefix + i)
-                {
-                    lockAtWorldCenter = lockAtWorldCenter
-                };
+                objects[i] = new SetupObjectConstraints(objectsToFix[i], variableNamePrefix + i, options);
             }
 
         }
@@ -167,6 +164,7 @@ namespace Myy
                 if (!toAttach.IsPrepared()) continue;
 
                 toAttach.AttachHierarchy(avatarCopy.gameObject);
+                toAttach.FixConstraintSources(avatar.gameObject, avatarCopy.gameObject);
                 toAttach.SetupStations(stationsProxies);
                 string variableName = toAttach.animVariableName;
 
@@ -232,7 +230,7 @@ namespace Myy
 
             /* FIXME Manage the global options correctly
              */
-            GenerateSetup(objectsToFix, options.lockAtWorldOrigin);
+            GenerateSetup(objectsToFix, options);
 
             MyyAssetsManager runAssets = PrepareRun(avatar);
             if (runAssets == null)

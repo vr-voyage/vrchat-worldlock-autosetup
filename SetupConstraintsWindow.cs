@@ -15,6 +15,12 @@ namespace Myy
     public struct ConstraintsGlobalOptions
     {
         public bool lockAtWorldOrigin;
+        public bool hideWhenOff;
+
+        public static ConstraintsGlobalOptions Default()
+        {
+            return new ConstraintsGlobalOptions() { lockAtWorldOrigin = true, hideWhenOff = false };
+        }
     }
     public class SetupConstraintsWindow : EditorWindow
     {
@@ -26,6 +32,7 @@ namespace Myy
          */
         //public ConstraintsGlobalOptions options;
         public bool lockAtWorldOrigin = false;
+        public bool hiddenWhenOff = true;
         public GameObject[] worldLockedObjects = new GameObject[1];
         public UnityEngine.Object saveDir;
 
@@ -193,6 +200,7 @@ namespace Myy
                 (Translate(StringID.Label_AvatarToConfigure),   "avatar", AvatarUseable),
                 (Translate(StringID.Label_ObjectToLock),        "worldLockedObjects", WorldLockedObjectsUseable),
                 (Translate(StringID.Label_LockAtWorldOrigin),   "lockAtWorldOrigin",  null),
+                (Translate(StringID.Label_HiddenWhenOff),       "hiddenWhenOff", null),
                 (Translate(StringID.Label_SaveDirectory),       "saveDir",            SaveDirectoryValid));
         }
 
@@ -216,7 +224,8 @@ namespace Myy
                 {
                     ConstraintsGlobalOptions options = new ConstraintsGlobalOptions()
                     {
-                        lockAtWorldOrigin = lockAtWorldOrigin
+                        lockAtWorldOrigin = lockAtWorldOrigin,
+                        hideWhenOff       = hiddenWhenOff
                     };
                     string saveDirPath = AssetDatabase.GetAssetPath(saveDir);
                     SetupAvatarConstraints setupTool = new SetupAvatarConstraints();

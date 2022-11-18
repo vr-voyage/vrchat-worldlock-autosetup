@@ -19,7 +19,7 @@ namespace Myy
      */
     public struct AnimProperties
     {
-        (string path, System.Type type, string fieldName, AnimationCurve curve)[] curves;
+        readonly (string path, System.Type type, string fieldName, AnimationCurve curve)[] curves;
 
         /**
          * <summary>Define animation properties, using LISP like syntax.
@@ -47,6 +47,7 @@ namespace Myy
          */
         public void AddTo(AnimationClip clip)
         {
+            if (curves == null) return;
             foreach (var curve in curves)
             {
                 clip.SetCurve(curve.path, curve.type, curve.fieldName, curve.curve);

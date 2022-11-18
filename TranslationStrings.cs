@@ -28,7 +28,8 @@ namespace Myy
             Message_SelectObjectsToConfigure,
             Button_SetupNewAvatar,
             Button_ResetPanel,
-            Button_InspectExpressionMenu
+            Button_InspectExpressionMenu,
+            Label_HiddenWhenOff
         }
 
         enum Lang
@@ -64,7 +65,8 @@ namespace Myy
                 "You can drop the objects to configure inside this window.",
             [StringID.Button_SetupNewAvatar] = "APPLY",
             [StringID.Button_ResetPanel] = "RESET",
-            [StringID.Button_InspectExpressionMenu] = "Open the Menu in the Inspector"
+            [StringID.Button_InspectExpressionMenu] = "Open the Menu in the Inspector",
+            [StringID.Label_HiddenWhenOff] = "Hide items when not locked"
 
         };
 
@@ -95,11 +97,13 @@ namespace Myy
                 "ヒエラルキーから、その画面にドロップしてよろしいです。",
             [StringID.Button_SetupNewAvatar] = "適用",
             [StringID.Button_ResetPanel] = "リセット",
-            [StringID.Button_InspectExpressionMenu] = "MenuをInspectorで開く"
+            [StringID.Button_InspectExpressionMenu] = "MenuをInspectorで開く",
+            [StringID.Label_HiddenWhenOff] = "固定するまで、アイテムを隠す"
+
 
         };
 
-        public static Dictionary<StringID, string> currentTranslation = messagesJP;
+        public static Dictionary<StringID, string> currentTranslation = messages;
 
         /* FIXME Use get/set */
         /* FIXME Make the type a specific type. Implement the function on it. */

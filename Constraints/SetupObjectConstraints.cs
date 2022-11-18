@@ -24,7 +24,7 @@ namespace Myy
         const string containerName = "Container";
 
         public GameObject copy;
-        public bool lockAtWorldCenter = false;
+        public ConstraintsGlobalOptions options = ConstraintsGlobalOptions.Default();
 
         public enum ClipIndex
         {
@@ -171,7 +171,7 @@ namespace Myy
                          *   offCurves are set to index 0
                          *   onCurves are set to index 1
                          *   curve[0] will have Component.m_Enabled set to 0
-                         *   curve[1] will have COmponent.m_Enabled set to 1
+                         *   curve[1] will have Component.m_Enabled set to 1
                          */
 
                         for (int i = 0; i < clips.Length; i++)
@@ -195,9 +195,10 @@ namespace Myy
 
 
 
-        public SetupObjectConstraints(GameObject go, string variableName)
+        public SetupObjectConstraints(GameObject go, string variableName, ConstraintsGlobalOptions options)
             : base(go, variableName)
         {
+            this.options = options;
             additionalHierarchy.name = worldLockSuffix + "-" + animVariableName;
             clips = new AnimationClip[(int)ClipIndex.COUNT];
             machines = new AnimatorStateMachine[]
@@ -232,7 +233,7 @@ namespace Myy
 
         private string PathToContainer()
         {
-            if (!lockAtWorldCenter)
+            if (!options.lockAtWorldOrigin)
             {
                 return $"{PathToParentConstraint()}/{containerName}";
             }
@@ -241,6 +242,51 @@ namespace Myy
                 return $"{PathToHierarchy()}/{containerName}";
             }
             
+        }
+
+        public void FixConstraintSources(GameObject mainAvatar, GameObject avatarCopy)
+        {
+            List<ConstraintSource> constraintSources = new List<ConstraintSource>();
+            foreach (var constraint in copy.GetComponentsInChildren<IConstraint>())
+            {
+                constraintSources.Clear();
+
+                /* Get the sources
+                 * Check if they refer to a member of the mainAvatar
+                 * If that's the case, find the same member in the copy
+                 * and set it as the new source.
+                 */
+                constraint.GetSources(constraintSources);
+                
+                int nSources = constraintSources.Count;
+                for (int i = 0; i < nSources; i++)
+                {
+                    /* For each source transform set on the object,
+                     * Get the related GameObject (if any). */
+                    var source = constraintSources[i];
+                    GameObject sourceObject = source.sourceTransform.gameObject;
+                    if (sourceObject == null) continue;
+
+                    /* Check if there's a direct path between the source GameObject and
+                     * the maih Avatar */
+                    string relativePath = sourceObject.PathFrom(mainAvatar);
+                    if (relativePath == null) continue;
+
+                    /* Try to use the same relative path from the avatar copy, to
+                     * find a similar GameObject Transform. */
+                    Transform copyTransform = avatarCopy.transform.Find(relativePath);
+
+                    if (copyTransform == null) continue;
+
+                    /* Use the found GameObject Transform copy as the new source */
+                    source.sourceTransform = copyTransform;
+                    constraintSources[i] = source; // Structure needs to be copied back
+                }
+
+                /* Set the potentially modified sources back */
+                constraint.SetSources(constraintSources);
+
+            }
         }
 
         public void AttachHierarchy(GameObject avatar)
@@ -264,10 +310,14 @@ namespace Myy
                 name = containerName
             };
             /* Default state to non-active (OFF), so that
-                * people disabling custom animations don't see
-                * the objects
-                */
-            lockedContainer.SetActive(false);
+             * people disabling custom animations don't see
+             * the objects
+             */
+            if (options.hideWhenOff)
+            {
+                lockedContainer.SetActive(false);
+            }
+                
 
             avatar.transform.position = new Vector3(0, 0, 0);
             lockedContainer.transform.position = new Vector3(0, 0, 0);
@@ -275,7 +325,7 @@ namespace Myy
             Transform rootTransform = avatar.transform;
 
             /* So the logic is : Lerp(AvatarPosition, -AvatarPosition, 0.5)
-                * which provide the middlepoint between your avatar position and its opposite. */
+             * which provide the middlepoint between your avatar position and its opposite. */
             posConstraint.AddSource(rootTransform, -1);
 
             /* Here, it's black magic : Any negative value will freeze the rotation */
@@ -284,7 +334,7 @@ namespace Myy
             worldLock.transform.parent = avatar.transform;
 
             GameObject containerParent = worldLock;
-            if (!lockAtWorldCenter)
+            if (!options.lockAtWorldOrigin)
             {
                 /* Ye standard setup */
                 GameObject parentLock = new GameObject
@@ -308,16 +358,38 @@ namespace Myy
             fixedCopy.SetActive(true);
 
             string objectPath = $"{PathToContainer()}/{fixedCopy.name}";
-            Vector3 actualPosition = fixedCopy.transform.localPosition;
-            Vector3 actualScale = fixedCopy.transform.localScale;
-            fixedCopy.transform.localScale = Vector3.zero;
-            fixedCopy.transform.localPosition = Vector3.zero;
+            if (options.hideWhenOff)
+            {
+                Vector3 actualPosition = fixedCopy.transform.localPosition;
+                Vector3 actualScale = fixedCopy.transform.localScale;
+                fixedCopy.transform.localScale = Vector3.zero;
+                fixedCopy.transform.localPosition = Vector3.zero;
+                clips[(int)ClipIndex.OFF].SetCurve(objectPath, typeof(Transform), "m_LocalPosition", Vector3.zero);
+                clips[(int)ClipIndex.OFF].SetCurve(objectPath, typeof(Transform), "m_LocalScale", Vector3.zero);
+                clips[(int)ClipIndex.ON].SetCurve(objectPath, typeof(Transform), "m_LocalPosition", actualPosition);
+                clips[(int)ClipIndex.ON].SetCurve(objectPath, typeof(Transform), "m_LocalScale", actualScale);
+            }
 
-            clips[(int)ClipIndex.OFF].SetCurve(objectPath, typeof(Transform), "m_LocalPosition", Vector3.zero);
-            clips[(int)ClipIndex.OFF].SetCurve(objectPath, typeof(Transform), "m_LocalScale", Vector3.zero);
-            clips[(int)ClipIndex.ON].SetCurve(objectPath, typeof(Transform), "m_LocalPosition", actualPosition);
-            clips[(int)ClipIndex.ON].SetCurve(objectPath, typeof(Transform), "m_LocalScale", actualScale);
 
+            foreach (Transform t in fixedCopy.GetComponentsInChildren<Transform>())
+            {
+                GameObject go = t.gameObject;
+                string relativePathFromContainer = go.PathFrom(lockedContainer);
+                if (relativePathFromContainer == null)
+                {
+                    Debug.LogWarning($"Cannot retrieve the relative path between {lockedContainer.name} and {go.name}");
+                    continue;
+                }
+                string lockedObjectPath = $"{PathToContainer()}/{go.PathFrom(lockedContainer)}";
+
+                foreach (var constraint in go.GetComponentsInChildren<IConstraint>())
+                {
+                    clips[(int)ClipIndex.ON].SetCurve(
+                        lockedObjectPath, constraint.GetType(), "m_Enabled", ConstantCurve(false));
+                    clips[(int)ClipIndex.OFF].SetCurve(
+                        lockedObjectPath, constraint.GetType(), "m_Enabled", ConstantCurve(true));
+                }
+            }
             AssetDatabase.SaveAssets();
 
             this.copy = fixedCopy;
@@ -326,9 +398,29 @@ namespace Myy
         public bool GenerateAnims()
         {
             string containerPath = PathToContainer();
+            GenerateAnimations(assetManager, clips, 
+                    ((int)ClipIndex.OFF, "OFF", new AnimProperties()),
+                    ((int)ClipIndex.ON, "ON", new AnimProperties())
+            );
 
+            if (options.hideWhenOff)
+            {
+                clips[(int)ClipIndex.ON].SetCurve(
+                    containerPath, typeof(GameObject), "m_IsActive", ConstantCurve(true));
+                clips[(int)ClipIndex.OFF].SetCurve(
+                    containerPath, typeof(GameObject), "m_IsActive", ConstantCurve(false));
+            }
 
-            if (!lockAtWorldCenter)
+            if (!options.lockAtWorldOrigin)
+            {
+                string constraintPath = PathToParentConstraint();
+                clips[(int)ClipIndex.ON].SetCurve(
+                    constraintPath, typeof(ParentConstraint), "m_Active", ConstantCurve(false));
+                clips[(int)ClipIndex.OFF].SetCurve(
+                    constraintPath, typeof(ParentConstraint), "m_Active", ConstantCurve(true));
+            }
+            /* !!! options.hideWhenOff */
+            /*if (!options.lockAtWorldOrigin)
             {
                 string constraintPath = PathToParentConstraint();
                 GenerateAnimations(assetManager, clips,
@@ -350,7 +442,7 @@ namespace Myy
                     ((int)ClipIndex.ON, "ON", new AnimProperties(
                         (containerPath, typeof(GameObject), "m_IsActive", ConstantCurve(true))
                     )));
-            }
+            }*/
 
 
             /* TODO Find a better way to factorize this */
