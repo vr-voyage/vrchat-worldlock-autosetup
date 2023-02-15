@@ -6,9 +6,9 @@ using VRC.SDK3.Avatars.Components;
 using UnityEditor.Animations;
 using VRC.SDK3.Avatars.ScriptableObjects;
 using UnityEditor;
-using Boo.Lang;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Collections.Generic;
 
 namespace Myy
 {
@@ -316,7 +316,9 @@ namespace Myy
             {
                 return 0;
             }
-            return suffixes.Sort().Last() + 1;
+            suffixes.Sort();
+
+            return suffixes.Last() + 1;
         }
 
         public void Setup(VRCAvatarDescriptor avatar, ConstraintsGlobalOptions options, params GameObject[] objectsToFix)
