@@ -10,12 +10,6 @@ using VRC.SDK3.Avatars.Components;
 namespace Myy
 {
     using static MyyAnimHelpers;
-    [System.Serializable]
-    public struct PinnedObjectConstraint
-    {
-        public GameObject gameObject;
-        public bool lockAtWorldCenter;
-    };
 
     public class SetupObjectConstraints : SetupObject
     {
@@ -24,7 +18,8 @@ namespace Myy
         const string containerName = "Container";
 
         public GameObject copy;
-        public ConstraintsGlobalOptions options = ConstraintsGlobalOptions.Default();
+        public ConstraintsGlobalOptions options =
+            ConstraintsGlobalOptions.Default();
 
         public enum ClipIndex
         {
@@ -382,13 +377,18 @@ namespace Myy
                 }
                 string lockedObjectPath = $"{PathToContainer()}/{go.PathFrom(lockedContainer)}";
 
-                foreach (var constraint in go.GetComponentsInChildren<IConstraint>())
+                
+                if (options.dontDisableConstraints == false)
                 {
-                    clips[(int)ClipIndex.ON].SetCurve(
-                        lockedObjectPath, constraint.GetType(), "m_Enabled", ConstantCurve(false));
-                    clips[(int)ClipIndex.OFF].SetCurve(
-                        lockedObjectPath, constraint.GetType(), "m_Enabled", ConstantCurve(true));
+                    foreach (var constraint in go.GetComponentsInChildren<IConstraint>())
+                    {
+                        clips[(int)ClipIndex.ON].SetCurve(
+                            lockedObjectPath, constraint.GetType(), "m_Enabled", ConstantCurve(false));
+                        clips[(int)ClipIndex.OFF].SetCurve(
+                            lockedObjectPath, constraint.GetType(), "m_Enabled", ConstantCurve(true));
+                    }
                 }
+
             }
             AssetDatabase.SaveAssets();
 
@@ -419,53 +419,7 @@ namespace Myy
                 clips[(int)ClipIndex.OFF].SetCurve(
                     constraintPath, typeof(ParentConstraint), "m_Active", ConstantCurve(true));
             }
-            /* !!! options.hideWhenOff */
-            /*if (!options.lockAtWorldOrigin)
-            {
-                string constraintPath = PathToParentConstraint();
-                GenerateAnimations(assetManager, clips,
-                    ((int)ClipIndex.OFF, "OFF", new AnimProperties(
-                        (containerPath,  typeof(GameObject),       "m_IsActive", ConstantCurve(false)),
-                        (constraintPath, typeof(ParentConstraint), "m_Active",   ConstantCurve(true))
-                    )),
-                    ((int)ClipIndex.ON, "ON", new AnimProperties(
-                        (containerPath,  typeof(GameObject),       "m_IsActive", ConstantCurve(true)),
-                        (constraintPath, typeof(ParentConstraint), "m_Active",   ConstantCurve(false))
-                    )));
-            }
-            else
-            {
-                GenerateAnimations(assetManager, clips,
-                    ((int)ClipIndex.OFF, "OFF", new AnimProperties(
-                        (containerPath, typeof(GameObject), "m_IsActive", ConstantCurve(false))
-                    )),
-                    ((int)ClipIndex.ON, "ON", new AnimProperties(
-                        (containerPath, typeof(GameObject), "m_IsActive", ConstantCurve(true))
-                    )));
-            }*/
 
-
-            /* TODO Find a better way to factorize this */
-            /*(ClipIndex index, string name, bool containerState,  bool constraintState)[]
-            animationValues = {
-                (ClipIndex.ON,  "ON",   true, false),
-                (ClipIndex.OFF, "OFF", false, true)
-            };
-
-            foreach (var clipInfos in animationValues)
-            {
-                AnimationClip clip = new AnimationClip() { name = clipInfos.name };
-
-                clip.SetCurve(containerPath, typeof(GameObject), "m_IsActive", clipInfos.containerState);
-                
-                if (!lockAtWorldCenter)
-                {
-                    clip.SetCurve(PathToParentConstraint(), typeof(ParentConstraint), "m_Active", clipInfos.constraintState);
-                }
-
-                assetManager.GenerateAsset(clip, $"{clip.name}.anim");
-                clips[(int)clipInfos.index] = clip;
-            }*/
 
             return true;
         }

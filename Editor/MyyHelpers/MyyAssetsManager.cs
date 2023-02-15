@@ -161,10 +161,15 @@ namespace Myy
          * 
          * <param name="o">The object to generate an asset file from.</param>
          * <param name="relativePath">The desired relative filepath for the generated asset.</param>
+         * <param name="labels">Optional : The list of labels you want to set on the assets</param>
          */
-        public void GenerateAsset(UnityEngine.Object o, string relativePath)
+        public void GenerateAsset(UnityEngine.Object o, string relativePath, string[] labels = null)
         {
             AssetDatabase.CreateAsset(o, AssetPath(relativePath));
+            if (labels != null)
+            {
+                AssetDatabase.SetLabels(o, labels);
+            }
         }
 
         /**

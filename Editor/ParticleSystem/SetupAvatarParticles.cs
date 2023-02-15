@@ -20,10 +20,18 @@ namespace Myy
         public MyyAssetsManager assetsBase;
         private string avatarCopyName;
 
+        public const string mainPrefix = "V-WLAS-";
+        public const string variableNamePrefix = mainPrefix + "Lock";
+
+        const string mainMenuFileName = "SDK3-Expressions-Menu.asset";
+        const string mainMenuParametersFileName = "SDK3-Expressions-Parameters.asset";
+        const string ourMenuFileName = mainPrefix + "Expressions-Sub-Menu.asset";
+        const string mainSubMenuName = "World Objects";
+        readonly string[] assetLabels = new string[] { "World-Lock Autosetup" };
         public SetupAvatarParticles()
         {
             objects = new SetupObjectParticles[0];
-            variableName = "Lock";
+ 
             assetsBase = new MyyAssetsManager();
         }
 
@@ -35,7 +43,7 @@ namespace Myy
         public MyyAssetsManager PrepareRun(VRCAvatarDescriptor avatar)
         {
             MyyAssetsManager runAssets = null;
-            avatarCopyName = string.Format("{0}-ParticlesLock-{1}", avatar.name, DateTime.Now.ToString("yyyyMMdd-HHmmss-ffff"));
+            avatarCopyName = string.Format("{0}-WLAS-Particles-{1}", avatar.name, DateTime.Now.ToString("yyMMdd-HHmmss"));
             string runFolderName = MyyAssetsManager.FilesystemFriendlyName(avatarCopyName);
             string runFolderPath = assetsBase.MkDir(runFolderName);
             if (runFolderPath == "")
@@ -106,7 +114,7 @@ namespace Myy
 
                 VRCExpressionParameters menuParams =
                     runAssets.ScriptAssetCopyOrCreate<VRCExpressionParameters>(
-                        avatarCopy.expressionParameters, "SDK3-Params.asset");
+                        avatarCopy.expressionParameters, mainMenuParametersFileName);
 
                 /* FIXME Dubious. The menu should be created correctly,
                  * not fixed afterwards...
@@ -118,11 +126,14 @@ namespace Myy
 
                 VRCExpressionsMenu menu =
                     runAssets.ScriptAssetCopyOrCreate<VRCExpressionsMenu>(
-                        avatarCopy.expressionsMenu, "SDK3-Menu.asset");
+                        avatarCopy.expressionsMenu,
+                        mainMenuFileName);
 
                 VRCExpressionsMenu subMenu = ScriptableObject.CreateInstance<VRCExpressionsMenu>();
                 /* FIXME Generate as many menu as necessary */
-                runAssets.GenerateAsset(subMenu, "ToggleMenu.asset");
+                runAssets.GenerateAsset(subMenu, ourMenuFileName);
+                AssetDatabase.SetLabels(subMenu, assetLabels);
+
 
                 AnimatorController controller;
                 string controllerName = "FX";
@@ -139,6 +150,7 @@ namespace Myy
                         controller = runAssets.GenerateAnimController(controllerName);
                     }
                 }
+                AssetDatabase.SetLabels(controller, assetLabels);
 
                 /* Setting up the menu before hand, to avoid some
                  * potential weird issues when playing with the menus.
@@ -170,14 +182,16 @@ namespace Myy
 
         }
 
-        private void GenerateSetup(GameObject[] objectsToFix)
+        private void GenerateSetup(GameObject[] objectsToFix, int start = 0)
         {
             int nObjects = objectsToFix.Length;
             objects = new SetupObjectParticles[nObjects];
 
             for (int i = 0; i < nObjects; i++)
             {
-                objects[i] = new SetupObjectParticles(objectsToFix[i], variableName);
+                objects[i] = new SetupObjectParticles(
+                    objectsToFix[i],
+                    $"{variableNamePrefix}{start + i}");
             }
 
         }

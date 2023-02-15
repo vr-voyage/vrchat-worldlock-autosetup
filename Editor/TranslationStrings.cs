@@ -3,6 +3,8 @@
 using UnityEditor;
 using UnityEngine;
 using System.Collections.Generic;
+using System.Globalization;
+using System;
 
 namespace Myy
 {
@@ -10,6 +12,50 @@ namespace Myy
 
     public static class TranslationStrings
     {
+
+        const string configUILangKey = "Voyage_WorldLockAutoSetup_Lang";
+
+        static TranslationStrings()
+        {
+            int key = EditorPrefs.GetInt(configUILangKey, -1);
+            if (key == -1 || key >= (int)Lang.Count)
+            {
+                if (Application.systemLanguage == SystemLanguage.Japanese)
+                {
+                    key = (int)Lang.JA_JP;
+                }
+                else
+                {
+                    key = (int)Lang.EN_GB;
+                }
+
+                try
+                {
+                    EditorPrefs.SetInt(configUILangKey, key);
+                }
+                catch (Exception e)
+                {
+                    /* It's annoying if it fails, but it's not the
+                     * end of the world.
+                     * Just alert the user.
+                     */
+                    Debug.LogWarning("[World Lock Autosetup] Could not save the default language settings.");
+                    Debug.LogWarning($"[World Lock Autosetup] Reason : {e.StackTrace}");
+                }
+            }
+            if (key == (int)Lang.JA_JP)
+            {
+                currentTranslation = messagesJP;
+            }
+            else
+            {
+                currentTranslation = messages;
+            }
+            
+            
+
+
+        }
 
         public enum StringID
         {
@@ -29,15 +75,49 @@ namespace Myy
             Button_SetupNewAvatar,
             Button_ResetPanel,
             Button_InspectExpressionMenu,
-            Label_HiddenWhenOff
+            Label_HiddenWhenOff,
+            Label_DontDisableConstraints,
+            Message_AvatarAlreadyConfiguredParticles
         }
 
-        enum Lang
+        public enum Lang
         {
             EN_GB,
-            FR_FR,
-            JA_JP
+            JA_JP,
+            Count
         };
+
+        /* FIXME :
+         * Stupid hack to get a useable configuration window.
+         */
+        public enum HumanReadableLang
+        {
+            English,
+            日本語
+        };
+
+        public static void SetLang(HumanReadableLang language)
+        {
+            Lang lang = Lang.EN_GB;
+            switch (language)
+            {
+                case HumanReadableLang.English:
+                    lang = Lang.EN_GB;
+                    currentTranslation = messages;
+                    break;
+                case HumanReadableLang.日本語:
+                    lang = Lang.JA_JP;
+                    currentTranslation = messagesJP;
+                    break;
+                default:
+                    lang = Lang.EN_GB;
+                    Debug.LogWarning($"[World Lock Autosetup] Wrong language setting : {language}. Defaulting to English.");
+                    currentTranslation = messages;
+                    break;
+            }
+
+            EditorPrefs.SetInt(configUILangKey, (int)lang);
+        }
 
         public static Dictionary<StringID, string> messages = new Dictionary<StringID, string> {
             [StringID.Invalid] = "Invalid Message",
@@ -66,8 +146,9 @@ namespace Myy
             [StringID.Button_SetupNewAvatar] = "APPLY",
             [StringID.Button_ResetPanel] = "RESET",
             [StringID.Button_InspectExpressionMenu] = "Open the Menu in the Inspector",
-            [StringID.Label_HiddenWhenOff] = "Hide items when not locked"
-
+            [StringID.Label_HiddenWhenOff] = "Hide items when not locked",
+            [StringID.Label_DontDisableConstraints] = "Don't disable constraints already setup",
+            [StringID.Message_AvatarAlreadyConfiguredParticles] = "Equipping an item on an already equipped avatar copy is not supported in this mode."
         };
 
         public static Dictionary<StringID, string> messagesJP = new Dictionary<StringID, string>
@@ -98,12 +179,13 @@ namespace Myy
             [StringID.Button_SetupNewAvatar] = "適用",
             [StringID.Button_ResetPanel] = "リセット",
             [StringID.Button_InspectExpressionMenu] = "MenuをInspectorで開く",
-            [StringID.Label_HiddenWhenOff] = "固定するまで、アイテムを隠す"
-
-
+            [StringID.Label_HiddenWhenOff] = "固定するまで、アイテムを隠す",
+            [StringID.Label_DontDisableConstraints] = "既設のConstraintを無効化しない",
+            [StringID.Message_AvatarAlreadyConfiguredParticles] = 
+                "このモードでは、すでに装備しているアバターコピーにアイテムを装備することはできません。"
         };
 
-        public static Dictionary<StringID, string> currentTranslation = messages;
+        public static Dictionary<StringID, string> currentTranslation = messagesJP;
 
         /* FIXME Use get/set */
         /* FIXME Make the type a specific type. Implement the function on it. */

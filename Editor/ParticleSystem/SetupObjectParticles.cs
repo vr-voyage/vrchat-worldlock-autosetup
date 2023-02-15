@@ -40,13 +40,15 @@ namespace Myy
             COUNT
         }
 
-        public SetupObjectParticles(GameObject go, string variableNamePrefix)
-            : base(go, variableNamePrefix)
+        public SetupObjectParticles(GameObject go, string variableName)
+            : base(go, variableName)
         {
-            additionalHierarchy.name = "ParticleSystem-" + fixedObject.name;
+            additionalHierarchy.name = "V-WLAS-ParticleSystem-" + fixedObject.name;
             parameters = new AnimatorControllerParameter[(int)ParameterIndex.COUNT];
             clips = new AnimationClip[(int)ClipIndex.COUNT];
             machines = new AnimatorStateMachine[(int)MachineIndex.COUNT];
+
+            animVariableName = variableName;
 
             ParametersInit();
             MachinesInit();
@@ -218,7 +220,7 @@ namespace Myy
             objectOFF.AddTransition(objectON, AnimatorConditionMode.If,    animVariableName, true);
             objectON.AddTransition(objectOFF, AnimatorConditionMode.IfNot, animVariableName, true);
 
-            machineOnOff.name = MyyAssetsManager.FilesystemFriendlyName("WorldLock-ParticlesOnOff");
+            machineOnOff.name = MyyAssetsManager.FilesystemFriendlyName($"{animVariableName}-ParticlesOnOff");
 
             return true;
         }
@@ -251,7 +253,7 @@ namespace Myy
             waitingState.AddTransition(rotatingState, AnimatorConditionMode.If,    animVarMenuOpened, true);
             rotatingState.AddTransition(waitingState, AnimatorConditionMode.IfNot, animVarMenuOpened, true);
 
-            machineRotate.name = "WorldLock-Rotate";
+            machineRotate.name = $"{animVariableName}-Rotate";
 
             return true;
         }
@@ -310,7 +312,7 @@ namespace Myy
                 }
             }
 
-            machineRoF.name = "WorldLock-RateOfFire";
+            machineRoF.name = $"{animVariableName}-RateOfFire";
 
             return true;
         }

@@ -1,46 +1,48 @@
 ﻿#if UNITY_EDITOR
 
-using UnityEngine;
-using UnityEditor;
-using VRC.SDK3.Avatars.Components;
 using System.Collections.Generic;
-using System;
+using UnityEditor;
+using UnityEditor.Animations;
+using UnityEngine;
+using VRC.SDK3.Avatars.Components;
 using VRC.SDK3.Avatars.ScriptableObjects;
 
 namespace Myy
 {
     /* Import Translate and StringID */
     using static TranslationStrings;
-    [Serializable]
-    public struct ConstraintsGlobalOptions
-    {
-        public bool lockAtWorldOrigin;
-        public bool hideWhenOff;
-
-        public static ConstraintsGlobalOptions Default()
-        {
-            return new ConstraintsGlobalOptions() { lockAtWorldOrigin = true, hideWhenOff = false };
-        }
-    }
-    public class SetupConstraintsWindow : EditorWindow
+    public class SetupParticlesWindow : EditorWindow
     {
 
         public VRCAvatarDescriptor avatar;
-        /* FIXME
-         * Currently using a hack in order to provide
-         * a fair translation for the option.
-         */
-        //public ConstraintsGlobalOptions options;
-        public bool lockAtWorldOrigin = false;
-        public bool hiddenWhenOff = true;
-        public GameObject[] worldLockedObjects = new GameObject[1];
+        public GameObject worldLockedObject;
         public UnityEngine.Object saveDir;
 
-        const int N_CONTROLS_ADDED = 1;
+        const int N_CONTROLS_ADDED = 2;
 
         SimpleEditorUI ui;
 
         #region CheckFunctions
+
+        bool AvatarAlreadyConfigured(VRCAvatarDescriptor avatar)
+        {
+            string variablePrefix = SetupAvatarParticles.variableNamePrefix;
+            var fxLayer = MyyVRCHelpers.AvatarGetFXLayer(avatar);
+            var controller = fxLayer.animatorController as AnimatorController;
+            if ((fxLayer.isDefault) | (!fxLayer.isEnabled) | (controller == null))
+            {
+                return false;
+            }
+            
+            foreach (var parameter in controller.parameters)
+            {
+                if (parameter.name.StartsWith(variablePrefix))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
 
         bool AvatarUseable(SerializedProperty property)
         {
@@ -68,31 +70,27 @@ namespace Myy
                 return false;
             }
 
+            if (AvatarAlreadyConfigured(avatar))
+            {
+                EditorGUILayout.HelpBox(
+                    Translate(StringID.Message_AvatarAlreadyConfiguredParticles),
+                    MessageType.Error);
+                return false;
+            }
+
             return true;
         }
 
         bool WorldLockedObjectsUseable(SerializedProperty property)
         {
-            if (worldLockedObjects.Length < 1)
+            if (worldLockedObject == null)
             {
                 EditorGUILayout.HelpBox(
-                    Translate(StringID.Message_SelectObjectsToConfigure),
+                    Translate(StringID.Message_SelectObjectToConfigure),
                     MessageType.Info);
-                return false;
             }
 
-            bool atLeastOneUseable = false;
-            foreach (var gameObject in worldLockedObjects)
-            {
-                atLeastOneUseable |= (gameObject != null);
-            }
-            if (!atLeastOneUseable)
-            {
-                EditorGUILayout.HelpBox(
-                    Translate(StringID.Message_SelectObjectsToConfigure),
-                    MessageType.Info);
-            }
-            return atLeastOneUseable;
+            return worldLockedObject != null;
         }
 
         bool SaveDirectoryValid(SerializedProperty saveDirProp)
@@ -121,22 +119,6 @@ namespace Myy
 
         #region ObjectsManagement
 
-        GameObject[] UseableObjects()
-        {
-            List<GameObject> useableObjects =
-                new List<GameObject>(worldLockedObjects.Length);
-
-            foreach (var objectToPin in worldLockedObjects)
-            {
-                if (objectToPin != null)
-                {
-                    useableObjects.Add(objectToPin);
-                }
-            }
-
-            return useableObjects.ToArray();
-        }
-
         void AddDroppedObjects(UnityEngine.Object[] objects)
         {
             List<GameObject> gameObjects = new List<GameObject>(objects.Length);
@@ -153,43 +135,27 @@ namespace Myy
                     }
                     else
                     {
-                        gameObjects.Add(go);
+                        worldLockedObject = go;
                     }
                 }
             }
-
-            AddGameObjects(gameObjects.ToArray());
-        }
-
-        void AddGameObjects(GameObject[] newObjects)
-        {
-            GameObject[] currentObjects = UseableObjects();
-
-            int totalObjects = newObjects.Length + currentObjects.Length;
-            if (worldLockedObjects.Length < totalObjects)
-            {
-                worldLockedObjects = new GameObject[totalObjects];
-            }
-
-            currentObjects.CopyTo(worldLockedObjects, 0);
-            newObjects.CopyTo(worldLockedObjects, currentObjects.Length);
 
         }
 
         void ResetFormData()
         {
             avatar = null;
-            worldLockedObjects = new GameObject[1];
+            worldLockedObject = null;
         }
 
         #endregion
 
         #region UI
 
-        [MenuItem("Voyage / World Lock Setup - Constraints (PC)")]
+        [MenuItem("Voyage / World Lock Setup - Particles (PC or Quest)")]
         public static void ShowWindow()
         {
-            GetWindow(typeof(SetupConstraintsWindow), true, "Constraints World Lock Setup (PC)");
+            GetWindow(typeof(SetupParticlesWindow), true, "Particles World Lock Setup (PC/Quest)");
         }
 
         private void OnEnable()
@@ -197,11 +163,9 @@ namespace Myy
             saveDir = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>("Assets");
 
             ui = new SimpleEditorUI(this,
-                (Translate(StringID.Label_AvatarToConfigure),   "avatar", AvatarUseable),
-                (Translate(StringID.Label_ObjectToLock),        "worldLockedObjects", WorldLockedObjectsUseable),
-                (Translate(StringID.Label_LockAtWorldOrigin),   "lockAtWorldOrigin",  null),
-                (Translate(StringID.Label_HiddenWhenOff),       "hiddenWhenOff", null),
-                (Translate(StringID.Label_SaveDirectory),       "saveDir",            SaveDirectoryValid));
+                (Translate(StringID.Label_AvatarToConfigure), "avatar",            AvatarUseable),
+                (Translate(StringID.Label_ObjectToLock),      "worldLockedObject", WorldLockedObjectsUseable),
+                (Translate(StringID.Label_SaveDirectory),     "saveDir",           SaveDirectoryValid));
         }
 
 
@@ -217,33 +181,23 @@ namespace Myy
             }
             GUILayout.Space(24);
 
-            if (ui.DrawFields())
+            if (ui.DrawFields() && GUILayout.Button(Translate(StringID.Button_SetupNewAvatar)))
             {
-                GUILayout.Space(60);
-                if (GUILayout.Button(Translate(StringID.Button_SetupNewAvatar)))
-                {
-                    ConstraintsGlobalOptions options = new ConstraintsGlobalOptions()
-                    {
-                        lockAtWorldOrigin = lockAtWorldOrigin,
-                        hideWhenOff       = hiddenWhenOff
-                    };
-                    string saveDirPath = AssetDatabase.GetAssetPath(saveDir);
-                    SetupAvatarConstraints setupTool = new SetupAvatarConstraints();
-                    setupTool.SetAssetsPath(MyyAssetsManager.DirPathFromAssets(saveDirPath).Trim(' ', '/'));
-                    setupTool.Setup(avatar, options, UseableObjects());
-                }
+                string saveDirPath = AssetDatabase.GetAssetPath(saveDir);
+                SetupAvatarParticles setupTool = new SetupAvatarParticles();
+                setupTool.SetAssetsPath(MyyAssetsManager.DirPathFromAssets(saveDirPath).Trim(' ', '/'));
+                setupTool.Setup(avatar, new GameObject[] { worldLockedObject });
             }
-
-
-            
 
             /* Handle Drag & Drop */
             switch (Event.current.type)
             {
                 case EventType.DragUpdated:
+                    /* Display the copy icon when hovering in Drag&Drop */
                     DragAndDrop.visualMode = DragAndDropVisualMode.Copy;
                     break;
                 case EventType.DragPerform:
+                    /* Accept the drag & drop and use what we can */
                     DragAndDrop.AcceptDrag();
                     AddDroppedObjects(DragAndDrop.objectReferences);
                     break;

@@ -1,0 +1,15 @@
+{
+  "name": "io.github.vr-voyage.tools.world-lock-autosetup",
+  "displayName": "Voyage World Lock Autosetup",
+  "version": "1.5.0",
+  "unity": "2019.4",
+  "description": "Tools to automate \"world locked\" items setup on avatars. https://github.com/vr-voyage/vrchat-worldlock-autosetup",
+  "vpmDependencies": {
+    "com.vrchat.avatars": "3.x"
+  },
+  "url": "https://github.com",
+  "legacyFolders": {
+    "Assets\\Voyage\\ObjectsFixer": ""
+  },
+  "type": "tool"
+}

@@ -15,13 +15,67 @@ namespace Myy
         public string label;
         public Func<SerializedProperty, bool> Check;
 
+        GUIContent propertyLabel;
+        GUIStyle checkboxLabelStyle;
+
+        delegate void DrawField();
+
+        DrawField drawField;
+
+        void DrawFieldSimple()
+        {
+            EditorGUILayout.Space(12);
+            EditorGUILayout.PropertyField(
+                property: property,
+                label: propertyLabel,
+                includeChildren: true);
+            EditorGUILayout.Space(12);
+        }
+
+        void DrawCheckbox()
+        {
+            checkboxLabelStyle = new GUIStyle("label");
+            checkboxLabelStyle.fontSize = 20;
+            EditorGUILayout.BeginHorizontal(GUILayout.Height(32));
+            EditorGUILayout.Space(10, false);
+            EditorGUILayout.PropertyField(
+                property: property,
+                label: GUIContent.none,
+                includeChildren: false,
+                GUILayout.ExpandWidth(false), GUILayout.Width(32), GUILayout.Height(32));
+            EditorGUILayout.LabelField(GUIContent.none, propertyLabel, checkboxLabelStyle, GUILayout.Height(32));
+            EditorGUILayout.EndHorizontal();
+        }
+
+        public SimpleUIElement(
+            SerializedProperty serializedProperty,
+            string labelText,
+            Func<SerializedProperty, bool> checkFunc) : this()
+        {
+            property = serializedProperty;
+            label = labelText;
+            Check = checkFunc;
+            propertyLabel = new GUIContent(label);
+            drawField = DrawFieldSimple;
+
+            
+
+
+            if (serializedProperty.propertyType == SerializedPropertyType.Boolean)
+            {
+                drawField = DrawCheckbox;
+            }
+
+        }
+
         public bool DrawAndCheck()
         {
-            EditorGUILayout.PropertyField(
+            drawField();
+            /*EditorGUILayout.PropertyField(
                 property: property,
                 label: new GUIContent(label),
                 includeChildren: true);
-            EditorGUILayout.Space(12);
+            EditorGUILayout.Space(12);*/
             return Check == null || Check(property);
         }
     }
@@ -95,7 +149,10 @@ namespace Myy
         {
             foreach (var (label, propertyName, checkFunc) in fields)
             {
-                Add(new SimpleUIElement() { property = serialO.FindProperty(propertyName), label = label, Check = checkFunc });
+                Add(new SimpleUIElement(
+                    serializedProperty: serialO.FindProperty(propertyName),
+                    labelText: label,
+                    checkFunc: checkFunc));
             }
         }
 
