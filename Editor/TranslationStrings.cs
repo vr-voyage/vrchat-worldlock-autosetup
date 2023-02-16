@@ -147,7 +147,7 @@ namespace Myy
             [StringID.Button_ResetPanel] = "RESET",
             [StringID.Button_InspectExpressionMenu] = "Open the Menu in the Inspector",
             [StringID.Label_HiddenWhenOff] = "Hide items when not locked",
-            [StringID.Label_DontDisableConstraints] = "Don't disable constraints already setup",
+            [StringID.Label_DontDisableConstraints] = "Don't disable constraints already setup, on lock",
             [StringID.Message_AvatarAlreadyConfiguredParticles] = "Equipping an item on an already equipped avatar copy is not supported in this mode."
         };
 
