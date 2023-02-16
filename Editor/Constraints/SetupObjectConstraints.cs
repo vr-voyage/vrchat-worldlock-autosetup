@@ -259,6 +259,8 @@ namespace Myy
                     /* For each source transform set on the object,
                      * Get the related GameObject (if any). */
                     var source = constraintSources[i];
+                    if (source.sourceTransform == null) continue;
+
                     GameObject sourceObject = source.sourceTransform.gameObject;
                     if (sourceObject == null) continue;
 
