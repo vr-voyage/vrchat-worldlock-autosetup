@@ -31,18 +31,20 @@ free to open a bug report.
 
 ## Setup world-locked items on PC avatars, using the Constraints tool
 
-https://user-images.githubusercontent.com/84687350/128454290-41b096f6-5657-4ec5-a816-60d50565aba4.mov
-https://user-images.githubusercontent.com/84687350/128454320-78cb2eb1-1556-4a7e-888d-b442904e48ae.mov
+[wlas-1.4-setup-constraints.webm](https://user-images.githubusercontent.com/84687350/219586892-9cdb912f-4e09-4948-bf6c-1295f8ff1a3d.webm)
+
+[wlas-1.4-constraints.webm](https://user-images.githubusercontent.com/84687350/219586914-7fc0956e-da5e-4657-bbb7-02509fa84127.webm)
 
 ## Setup world-locked items on Quest avatars, with the Particles tool
 
-https://user-images.githubusercontent.com/84687350/128454218-0d64153f-094c-4279-8635-006793f7c4da.mov
-https://user-images.githubusercontent.com/84687350/128454266-9a728bc1-1f2e-4f90-93c9-e9a5683ed453.mov
+[wlas-1.4-unity-setup-particles.webm](https://user-images.githubusercontent.com/84687350/219586982-2de14540-5376-4a00-9313-91b1991bcc2a.webm)
+
+[wlas-1.4-particles.webm](https://user-images.githubusercontent.com/84687350/219587013-d0eb1cda-0710-4b98-91e7-f1cce6fca5b7.webm)
 
 ## Video credits
 
-* Avatar : Vケットちゃん１号  
-  https://www.v-market.work/ec/items/656/detail/
+* Avatar : 2A-7-4 / RRRR　ヨツル by 拾い部屋  
+  https://hiroiheya.booth.pm/items/2019040
   
 * Item : Low poly (midi) keyboard  
   https://sketchfab.com/3d-models/low-poly-midi-keyboard-50040134cbfe4268a9af8b074bd24b15
@@ -58,12 +60,31 @@ See https://github.com/vr-voyage/vrchat-worldlock-autosetup/releases
 
 # Install
 
+## Using the **.unitypackage** file
+
+[wlas-1.4-install-unity-package.webm](https://user-images.githubusercontent.com/84687350/219587661-29fd674c-3c80-47b6-b8f8-5a57e5f7629f.webm)
+
 * Either install [**WorldLockAutosetup-20220712-en.unitypackage**](https://github.com/vr-voyage/vrchat-worldlock-autosetup/releases/download/v1.2.2/WorldLockAutosetup-20220712-en.unitypackage)
   using the editor menu **Assets > Import Package... > Custom Package...**.
 
 **OR**
 
 * Copy the code of this repository inside the **Assets** of your SDK3 Avatar project.
+
+## Using the VRChat Creator Companion
+
+[wlas-1.4-install-vpm-user-package.webm](https://user-images.githubusercontent.com/84687350/219587822-cc321ec8-ab67-46a3-b9c1-53672a5cf15d.webm)
+
+### Setup VCC to find the VPM package
+
+* Download the sources of this repository and unpack them somewhere on your harddrive
+* Open the **VRChat Creation Companion**
+* In **Settings**, Click the `Add` Button in **User Packages**
+* Select the folder where the downloaded sources were unpacked
+
+### Use the package in your project
+
+* In a **Project**, press the `Add` button below **Voyage's WOrld Lock Autosetup** in the list.
 
 # Usage
   
@@ -270,9 +291,18 @@ issues with the animators.
 
 # インストール方法
 
+## **.unitypackage**を使いたい場合
+
+[wlas-1.4-install-unity-package.webm](https://user-images.githubusercontent.com/84687350/219589062-405d5291-da24-49d7-838c-1e2503b88abe.webm)
+
 * [**WorldLockAutosetup-20220712-jp.unitypackage**](https://github.com/vr-voyage/vrchat-worldlock-autosetup/releases/download/v1.2.2/WorldLockAutosetup-20220712-jp.unitypackage)のファイルをダウンロードして
 * Unityの「**Assets > Import Package... > Custom Package...**」メニューアイテムを押下して、
 * ダウンロードしたファイルを開いた画面から開けてください。
+
+## VCCパッケージを使いたい場合
+
+[wlas-1.4-install-vpm-user-package.webm](https://user-images.githubusercontent.com/84687350/219589225-50f38167-6022-41d1-89d2-c2276876508a.webm)
+
 
 # 詳しく
 
