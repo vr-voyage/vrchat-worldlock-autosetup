@@ -312,7 +312,8 @@ namespace Myy
              */
             if (options.hideWhenOff)
             {
-                lockedContainer.SetActive(false);
+                additionalHierarchy.SetActive(false);
+                //lockedContainer.SetActive(false);
             }
                 
 
@@ -399,7 +400,7 @@ namespace Myy
 
         public bool GenerateAnims()
         {
-            string containerPath = PathToContainer();
+            string containerPath = PathToHierarchy();
             GenerateAnimations(assetManager, clips, 
                     ((int)ClipIndex.OFF, "OFF", new AnimProperties()),
                     ((int)ClipIndex.ON, "ON", new AnimProperties())
@@ -417,7 +418,7 @@ namespace Myy
             {
                 string constraintPath = PathToParentConstraint();
                 clips[(int)ClipIndex.ON].SetCurve(
-                    constraintPath, typeof(ParentConstraint), "m_Active", ConstantCurve(false));
+                    constraintPath, typeof(ParentConstraint), "m_Active", LinearCurve(true, false));
                 clips[(int)ClipIndex.OFF].SetCurve(
                     constraintPath, typeof(ParentConstraint), "m_Active", ConstantCurve(true));
             }
