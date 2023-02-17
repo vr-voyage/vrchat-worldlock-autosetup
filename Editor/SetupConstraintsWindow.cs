@@ -188,6 +188,9 @@ namespace Myy
         {
             avatar = null;
             worldLockedObjects = new GameObject[1];
+            lockAtWorldOrigin = false;
+            hiddenWhenOff = true;
+            dontDisableConstraints = false;
         }
 
         #endregion
