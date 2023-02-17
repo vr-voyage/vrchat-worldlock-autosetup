@@ -153,6 +153,7 @@ namespace Myy
             float start = 0,
             float end = 1 / 60.0f)
         {
+            /* FIXME : Useless. Use AnimationCurve.Constant instead */
             return new AnimationCurve(new Keyframe(start, value), new Keyframe(end, value));
         }
 
@@ -175,6 +176,17 @@ namespace Myy
             float end = 1 / 60.0f)
         {
             return ConstantCurve(value ? 1 : 0, start, end);
+        }
+
+        public static AnimationCurve LinearCurve(
+            bool startValue,
+            bool endValue,
+            float start = 0,
+            float end = 1 / 60.0f)
+        {
+            return AnimationCurve.Linear(
+                start, startValue ? 1 : 0,
+                end, endValue ? 1 : 0);
         }
 
         /**
