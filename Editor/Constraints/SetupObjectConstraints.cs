@@ -60,7 +60,7 @@ namespace Myy
 
             public bool SetupProxy(GameObject proxyParent)
             {
-
+                Debug.Log($"[SetupObjectConstraints] [SetupProxy] Original scale : {original.transform.localScale} {original.transform.lossyScale}");
                 GameObject newProxy = UnityEngine.Object.Instantiate(original, proxyParent.transform);
                 /* Ensure the name is unique */
                 newProxy.name += $"-{newProxy.GetInstanceID()}";
@@ -375,17 +375,19 @@ namespace Myy
             fixedCopy.name = fixedObject.name;
             fixedCopy.SetActive(true);
 
-            string objectPath = $"{PathToContainer()}/{fixedCopy.name}";
+            //string objectPath = $"{PathToContainer()}/{fixedCopy.name}";
             if (options.hideWhenOff)
             {
-                Vector3 actualPosition = fixedCopy.transform.localPosition;
+                string showHidePath = PathToContainer();
+                /*Vector3 actualPosition = fixedCopy.transform.localPosition;
                 Vector3 actualScale = fixedCopy.transform.localScale;
                 fixedCopy.transform.localScale = Vector3.zero;
-                fixedCopy.transform.localPosition = Vector3.zero;
-                clips[(int)ClipIndex.OFF].SetCurve(objectPath, typeof(Transform), "m_LocalPosition", Vector3.zero);
-                clips[(int)ClipIndex.OFF].SetCurve(objectPath, typeof(Transform), "m_LocalScale", Vector3.zero);
-                clips[(int)ClipIndex.ON].SetCurve(objectPath, typeof(Transform), "m_LocalPosition", actualPosition);
-                clips[(int)ClipIndex.ON].SetCurve(objectPath, typeof(Transform), "m_LocalScale", actualScale);
+                fixedCopy.transform.localPosition = Vector3.zero;*/
+                //clips[(int)ClipIndex.OFF].SetCurve(showHidePath, typeof(Transform), "m_LocalPosition", Vector3.zero);
+                lockedContainer.transform.localScale = Vector3.zero;
+                clips[(int)ClipIndex.OFF].SetCurve(showHidePath, typeof(Transform), "m_LocalScale", Vector3.zero);
+                //clips[(int)ClipIndex.ON].SetCurve(showHidePath, typeof(Transform), "m_LocalPosition", Vector3.);
+                clips[(int)ClipIndex.ON].SetCurve(showHidePath, typeof(Transform), "m_LocalScale", Vector3.one);
             }
 
 
@@ -477,6 +479,7 @@ namespace Myy
                 /* Just in case some objects were to have
                  * multiple Station components for no reason... */
                 objectsSet.Add(station.gameObject);
+                Debug.Log($"[SetupObjectConstriants] [SetupStations] Scale : {station.transform.lossyScale} {station.transform.localScale}");
             }
             foreach (var objectWithStation in objectsSet)
             {
