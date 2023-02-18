@@ -17,14 +17,14 @@ namespace Myy
     {
         public bool lockAtWorldOrigin;
         public bool hideWhenOff;
-        public bool dontDisableConstraints;
+        public bool disableConstraintsOnLock;
 
         public static ConstraintsGlobalOptions Default()
         {
             return new ConstraintsGlobalOptions() { 
                 lockAtWorldOrigin = true,
                 hideWhenOff = false,
-                dontDisableConstraints = false
+                disableConstraintsOnLock = true
             };
         }
     }
@@ -40,7 +40,7 @@ namespace Myy
         //public ConstraintsGlobalOptions options;
         public bool lockAtWorldOrigin = false;
         public bool hiddenWhenOff = true;
-        public bool dontDisableConstraints = false;
+        public bool disableConstraintsOnLock = true;
         public GameObject[] worldLockedObjects = new GameObject[1];
         public UnityEngine.Object saveDir;
 
@@ -190,7 +190,7 @@ namespace Myy
             worldLockedObjects = new GameObject[1];
             lockAtWorldOrigin = false;
             hiddenWhenOff = true;
-            dontDisableConstraints = false;
+            disableConstraintsOnLock = true;
         }
 
         #endregion
@@ -208,12 +208,12 @@ namespace Myy
             saveDir = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>("Assets");
 
             ui = new SimpleEditorUI(this,
-                (Translate(StringID.Label_AvatarToConfigure),      "avatar",                 AvatarUseable),
-                (Translate(StringID.Label_ObjectToLock),           "worldLockedObjects",     WorldLockedObjectsUseable),
-                (Translate(StringID.Label_LockAtWorldOrigin),      "lockAtWorldOrigin",      null),
-                (Translate(StringID.Label_HiddenWhenOff),          "hiddenWhenOff",          null),
-                (Translate(StringID.Label_DontDisableConstraints), "dontDisableConstraints", null),
-                (Translate(StringID.Label_SaveDirectory),          "saveDir",                SaveDirectoryValid));
+                (Translate(StringID.Label_AvatarToConfigure),      "avatar",                   AvatarUseable),
+                (Translate(StringID.Label_ObjectToLock),           "worldLockedObjects",       WorldLockedObjectsUseable),
+                (Translate(StringID.Label_LockAtWorldOrigin),      "lockAtWorldOrigin",        null),
+                (Translate(StringID.Label_HiddenWhenOff),          "hiddenWhenOff",            null),
+                (Translate(StringID.Label_DontDisableConstraints), "disableConstraintsOnLock", null),
+                (Translate(StringID.Label_SaveDirectory),          "saveDir",                  SaveDirectoryValid));
         }
 
         private void OnGUI()
@@ -236,7 +236,7 @@ namespace Myy
                     {
                         lockAtWorldOrigin = lockAtWorldOrigin,
                         hideWhenOff       = hiddenWhenOff,
-                        dontDisableConstraints = dontDisableConstraints
+                        disableConstraintsOnLock = disableConstraintsOnLock
                     };
                     string saveDirPath = AssetDatabase.GetAssetPath(saveDir);
                     SetupAvatarConstraints setupTool = new SetupAvatarConstraints();

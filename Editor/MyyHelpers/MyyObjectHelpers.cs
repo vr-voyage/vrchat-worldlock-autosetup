@@ -3,6 +3,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using VRC.Utility;
 
 namespace Myy
 {
@@ -139,7 +140,7 @@ namespace Myy
          * <param name="from">The object to compute the relative path from</param>
          * 
          * <returns>
-         * The relative path from the provided object, to this one, or an empty string
+         * The relative path from the provided object, to this one, or null
          * if <paramref name="from"/> is not a parent of this GameObject.
          * </returns>
          */
@@ -147,7 +148,7 @@ namespace Myy
         {
             if (from == gameObject)
             {
-                return "";
+                return null;
             }
 
             List<string> path = new List<string>(8);
@@ -162,7 +163,7 @@ namespace Myy
             /* No direct path were found */
             if (currentObject == null)
             {
-                return "";
+                return null;
             }
 
             path.Reverse();

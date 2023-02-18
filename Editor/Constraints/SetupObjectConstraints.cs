@@ -267,6 +267,26 @@ namespace Myy
                     /* Check if there's a direct path between the source GameObject and
                      * the maih Avatar */
                     string relativePath = sourceObject.PathFrom(mainAvatar);
+
+                    /* Since we can now add items to generated copies,
+                     * we need to try being a little smarter when it comes to relocating
+                     * Constraint sources.
+                     * So now, if the object doesn't appear to be fixed to the current Avatar,
+                     * we'll try to check if it's actually fixed to any avatar.
+                     * If that's the case, we'll use the path from that avatar to the
+                     * ConstraintSource and try to use it afterwards.
+                     */
+                    if (relativePath == null)
+                    {
+                        var owningAvatar = sourceObject.GetComponentInParent<VRCAvatarDescriptor>();
+                        if (owningAvatar == null) continue;
+
+                        if (owningAvatar.gameObject == null) continue;
+
+                        relativePath = sourceObject.PathFrom(owningAvatar.gameObject);
+                        Debug.Log($"[SetupObjectConstraints] [FixConstraintSources] Mimicked relative path : {relativePath}");
+                    }
+
                     if (relativePath == null) continue;
 
                     /* Try to use the same relative path from the avatar copy, to
@@ -381,7 +401,7 @@ namespace Myy
                 string lockedObjectPath = $"{PathToContainer()}/{go.PathFrom(lockedContainer)}";
 
                 
-                if (options.dontDisableConstraints == false)
+                if (options.disableConstraintsOnLock)
                 {
                     foreach (var constraint in go.GetComponentsInChildren<IConstraint>())
                     {

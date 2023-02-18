@@ -146,9 +146,9 @@ namespace Myy
             [StringID.Button_SetupNewAvatar] = "APPLY",
             [StringID.Button_ResetPanel] = "RESET",
             [StringID.Button_InspectExpressionMenu] = "Open the Menu in the Inspector",
-            [StringID.Label_HiddenWhenOff] = "Hide items when not locked",
-            [StringID.Label_DontDisableConstraints] = "Don't disable constraints already setup, on lock",
-            [StringID.Message_AvatarAlreadyConfiguredParticles] = "Equipping an item on an already equipped avatar copy is not supported in this mode."
+            [StringID.Label_HiddenWhenOff] = "Hide these items when not locked",
+            [StringID.Label_DontDisableConstraints] = "Disable these items own constraints when locked",
+            [StringID.Message_AvatarAlreadyConfiguredParticles] = "Equipping another item on an already equipped avatar copy is not supported in this mode."
         };
 
         public static Dictionary<StringID, string> messagesJP = new Dictionary<StringID, string>
@@ -180,7 +180,7 @@ namespace Myy
             [StringID.Button_ResetPanel] = "リセット",
             [StringID.Button_InspectExpressionMenu] = "MenuをInspectorで開く",
             [StringID.Label_HiddenWhenOff] = "固定するまで、アイテムを隠す",
-            [StringID.Label_DontDisableConstraints] = "既設のConstraintを無効化しない",
+            [StringID.Label_DontDisableConstraints] = "固定する時、既設のConstraintを無効化する",
             [StringID.Message_AvatarAlreadyConfiguredParticles] = 
                 "このモードでは、すでに装備しているアバターコピーにアイテムを装備することはできません。"
         };
