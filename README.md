@@ -60,16 +60,20 @@ See https://github.com/vr-voyage/vrchat-worldlock-autosetup/releases
 
 # Install
 
+## If you're upgrading from version 1.3 or earlier, remove the old version
+
+[wlas-1.4-uninstall-old-package.webm](https://user-images.githubusercontent.com/84687350/220350032-8375383f-80ed-4ba6-b676-384628e4c126.webm)
+
+Just locate the folder 'Voyage' in your Assets and delete it.  
+Then close Unity.
+
+Note that you can remove it afterwards too.
+
 ## Using the **.unitypackage** file
 
 [wlas-1.4-install-unity-package.webm](https://user-images.githubusercontent.com/84687350/219587661-29fd674c-3c80-47b6-b8f8-5a57e5f7629f.webm)
 
-* Either install [**WorldLockAutosetup-20220712-en.unitypackage**](https://github.com/vr-voyage/vrchat-worldlock-autosetup/releases/download/v1.2.2/WorldLockAutosetup-20220712-en.unitypackage)
-  using the editor menu **Assets > Import Package... > Custom Package...**.
-
-**OR**
-
-* Copy the code of this repository inside the **Assets** of your SDK3 Avatar project.
+* Install **world-lock-autosetup-1.4.0.unitypackage** using the editor menu **Assets > Import Package... > Custom Package...**.
 
 ## Using the VRChat Creator Companion
 
@@ -291,18 +295,34 @@ issues with the animators.
 
 # インストール方法
 
+## 1.3以下からアップグレードをしている場合、まずは古いバージョンをアンインストールしてください
+
+[wlas-1.4-uninstall-old-package.webm](https://user-images.githubusercontent.com/84687350/220350897-efe7eedf-7176-4bb8-8f1c-d7e66a2ce0fb.webm)
+
+1.3以下のバージョンからアップグレードをしている場合、Assetsにある「Voyage」というフォルダーを削除してください。
+
+1.4以上のパッケージはUnityの[パッケージ・システム](https://docs.unity3d.com/ja/current/Manual/PackagesList.html)を使用しています。  
+そのため、ファイルのインストール先が1.3以下と違って、そのバージョンと衝突が起こります。
+
+その問題を防ぐために、1.3以下のファイルを削除してください。
+
 ## **.unitypackage**を使いたい場合
 
 [wlas-1.4-install-unity-package.webm](https://user-images.githubusercontent.com/84687350/219589062-405d5291-da24-49d7-838c-1e2503b88abe.webm)
 
-* [**WorldLockAutosetup-20220712-jp.unitypackage**](https://github.com/vr-voyage/vrchat-worldlock-autosetup/releases/download/v1.2.2/WorldLockAutosetup-20220712-jp.unitypackage)のファイルをダウンロードして
-* Unityの「**Assets > Import Package... > Custom Package...**」メニューアイテムを押下して、
-* ダウンロードしたファイルを開いた画面から開けてください。
+* [**world-lock-autosetup-1.4.0.unitypackage**]のファイルをダウンロードします。
+* Unityの「**Assets > Import Package... > Custom Package...**」の画面でパッケージ・ファイルを選んでインストールします。
 
-## VCCパッケージを使いたい場合
+## 「VRChat Creator Companion」パッケージを使いたい場合
 
 [wlas-1.4-install-vpm-user-package.webm](https://user-images.githubusercontent.com/84687350/219589225-50f38167-6022-41d1-89d2-c2276876508a.webm)
 
+* Sourcesのアーカイブをダウンロードします。
+* ハードドライブのどこかで、ダウンロードしたアーカイブを解凍します。
+* 「VRChat Creator Companion」の「Settings」にある、「User Packages」の「Add」ボタンを押下します。
+* アーカイブの解凍先を選びます。
+
+そうしたら、「Avatar」のプロジェクト画面の右パネルから、「Voyage's World Lock Autosetup」を「Add」（追加）することが出来ます。
 
 # 詳しく
 
