@@ -77,7 +77,7 @@ Note that you can remove it afterwards too.
 
 ## Using the VRChat Creator Companion
 
-[wlas-1.4-install-vpm-user-package.webm](https://user-images.githubusercontent.com/84687350/219587822-cc321ec8-ab67-46a3-b9c1-53672a5cf15d.webm)
+[wlas-1.4-install-vpm.webm](https://user-images.githubusercontent.com/84687350/220366622-900c4d42-799a-477e-9f03-b35a2647295e.webm)
 
 ### Setup VCC to find the VPM package
 
@@ -315,7 +315,7 @@ issues with the animators.
 
 ## 「VRChat Creator Companion」パッケージを使いたい場合
 
-[wlas-1.4-install-vpm-user-package.webm](https://user-images.githubusercontent.com/84687350/219589225-50f38167-6022-41d1-89d2-c2276876508a.webm)
+[wlas-1.4-install-vpm.webm](https://user-images.githubusercontent.com/84687350/220366749-cbed7bb6-e5cc-470c-b19e-a68140619cca.webm)
 
 * Sourcesのアーカイブをダウンロードします。
 * ハードドライブのどこかで、ダウンロードしたアーカイブを解凍します。
