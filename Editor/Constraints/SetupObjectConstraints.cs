@@ -332,8 +332,10 @@ namespace Myy
              */
             if (options.hideWhenOff)
             {
-                additionalHierarchy.SetActive(false);
-                //lockedContainer.SetActive(false);
+
+                /* Commented : Not working optimized version */
+                //additionalHierarchy.SetActive(false);
+                lockedContainer.SetActive(false);
             }
                 
 
@@ -422,7 +424,9 @@ namespace Myy
 
         public bool GenerateAnims()
         {
-            string containerPath = PathToHierarchy();
+            /* Commented : Not working optimized version */
+            //string containerPath = PathToHierarchy();
+            string containerPath = PathToContainer();
             GenerateAnimations(assetManager, clips, 
                     ((int)ClipIndex.OFF, "OFF", new AnimProperties()),
                     ((int)ClipIndex.ON, "ON", new AnimProperties())
@@ -431,18 +435,21 @@ namespace Myy
             if (options.hideWhenOff)
             {
                 clips[(int)ClipIndex.ON].SetCurve(
-                    containerPath, typeof(GameObject), "m_IsActive", ConstantCurve(true));
+                    containerPath, typeof(GameObject), "m_IsActive", true);
                 clips[(int)ClipIndex.OFF].SetCurve(
-                    containerPath, typeof(GameObject), "m_IsActive", ConstantCurve(false));
+                    containerPath, typeof(GameObject), "m_IsActive", false);
             }
 
             if (!options.lockAtWorldOrigin)
             {
                 string constraintPath = PathToParentConstraint();
+                /* Commented : Not working optimized version */
+                /*clips[(int)ClipIndex.ON].SetCurve(
+                    constraintPath, typeof(ParentConstraint), "m_Active", LinearCurve(true, false));*/
                 clips[(int)ClipIndex.ON].SetCurve(
-                    constraintPath, typeof(ParentConstraint), "m_Active", LinearCurve(true, false));
+                    constraintPath, typeof(ParentConstraint), "m_Active", false);
                 clips[(int)ClipIndex.OFF].SetCurve(
-                    constraintPath, typeof(ParentConstraint), "m_Active", ConstantCurve(true));
+                    constraintPath, typeof(ParentConstraint), "m_Active", true);
             }
 
 
