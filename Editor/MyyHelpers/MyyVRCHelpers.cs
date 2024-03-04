@@ -16,9 +16,18 @@ namespace Myy
         /**
          * <returns>The index of the FX Layer, in the baseAnimationLayers</returns>
          */
-        private static int FXLayerIndex()
+        private static int FXLayerIndex(VRCAvatarDescriptor avatar)
         {
-            return (int)VRCAvatarDescriptor.AnimLayerType.FX - 1; // 4
+            VRCAvatarDescriptor.CustomAnimLayer[] layers = avatar.baseAnimationLayers;
+            int nLayers = layers.Length;
+            for (int i = 0; i < nLayers; i++)
+            {
+                if (layers[i].type == VRCAvatarDescriptor.AnimLayerType.FX)
+                {
+                    return i;
+                }
+            }
+            return (int)VRCAvatarDescriptor.AnimLayerType.Deprecated0 - 1;
         }
 
         /**
@@ -33,7 +42,7 @@ namespace Myy
         public static VRCAvatarDescriptor.CustomAnimLayer AvatarGetFXLayer(
             VRCAvatarDescriptor avatar)
         {
-            return (avatar.baseAnimationLayers[FXLayerIndex()]);
+            return (avatar.baseAnimationLayers[FXLayerIndex(avatar)]);
         }
 
         /**
@@ -55,7 +64,7 @@ namespace Myy
             VRCAvatarDescriptor avatar,
             VRCAvatarDescriptor.CustomAnimLayer fxLayer)
         {
-            avatar.baseAnimationLayers[FXLayerIndex()] = fxLayer;
+            avatar.baseAnimationLayers[FXLayerIndex(avatar)] = fxLayer;
         }
 
         /**
