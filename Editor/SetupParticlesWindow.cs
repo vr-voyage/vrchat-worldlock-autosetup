@@ -27,7 +27,7 @@ namespace Myy
         bool AvatarAlreadyConfigured(VRCAvatarDescriptor avatar)
         {
             string variablePrefix = SetupAvatarParticles.variableNamePrefix;
-            var fxLayer = MyyVRCHelpers.AvatarGetFXLayer(avatar);
+            var fxLayer = avatar.GetBaseLayer(VRCAvatarDescriptor.AnimLayerType.FX);
             var controller = fxLayer.animatorController as AnimatorController;
             if ((fxLayer.isDefault) | (!fxLayer.isEnabled) | (controller == null))
             {
@@ -50,6 +50,13 @@ namespace Myy
             {
                 EditorGUILayout.HelpBox(
                     Translate(StringID.Message_SelectAvatarToConfigure),
+                    MessageType.Info);
+                return false;
+            }
+            if (!avatar.HasBaseAnimLayer(VRCAvatarDescriptor.AnimLayerType.FX))
+            {
+                EditorGUILayout.HelpBox(
+                    Translate(StringID.Message_AvatarHasNoFxLayerStrangeBug),
                     MessageType.Info);
                 return false;
             }

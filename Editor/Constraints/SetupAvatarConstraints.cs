@@ -364,7 +364,7 @@ namespace Myy
             AnimatorController controller;
             string controllerName = "FX";
             {
-                var fxLayer = MyyVRCHelpers.AvatarGetFXLayer(avatarCopy);
+                var fxLayer = avatarCopy.GetBaseLayer(VRCAvatarDescriptor.AnimLayerType.FX);
                 if (fxLayer.animatorController != null)
                 {
                     controller = runAssets.ControllerBackup(
@@ -435,7 +435,7 @@ namespace Myy
                 return 0;
             }
 
-            var fxLayer = MyyVRCHelpers.AvatarGetFXLayer(avatar);
+            var fxLayer = avatar.GetBaseLayer(VRCAvatarDescriptor.AnimLayerType.FX);
             if ((fxLayer.isEnabled == false) | (fxLayer.isDefault) | (fxLayer.animatorController == null))
             {
                 return 0;

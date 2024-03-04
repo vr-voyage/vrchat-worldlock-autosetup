@@ -59,6 +59,13 @@ namespace Myy
                     MessageType.Info);
                 return false;
             }
+            if (!avatar.HasBaseAnimLayer(VRCAvatarDescriptor.AnimLayerType.FX))
+            {
+                EditorGUILayout.HelpBox(
+                    Translate(StringID.Message_AvatarHasNoFxLayerStrangeBug),
+                    MessageType.Info);
+                return false;
+            }
             if (!avatar.customExpressions) return true;
 
             int maxControlsAuthorized = VRCExpressionsMenu.MAX_CONTROLS - N_CONTROLS_ADDED;

@@ -77,7 +77,8 @@ namespace Myy
             Button_InspectExpressionMenu,
             Label_HiddenWhenOff,
             Label_DontDisableConstraints,
-            Message_AvatarAlreadyConfiguredParticles
+            Message_AvatarAlreadyConfiguredParticles,
+            Message_AvatarHasNoFxLayerStrangeBug
         }
 
         public enum Lang
@@ -148,7 +149,8 @@ namespace Myy
             [StringID.Button_InspectExpressionMenu] = "Open the Menu in the Inspector",
             [StringID.Label_HiddenWhenOff] = "Hide these items when not locked",
             [StringID.Label_DontDisableConstraints] = "Disable these items own constraints when locked",
-            [StringID.Message_AvatarAlreadyConfiguredParticles] = "Equipping another item on an already equipped avatar copy is not supported in this mode."
+            [StringID.Message_AvatarAlreadyConfiguredParticles] = "Equipping another item on an already equipped avatar copy is not supported in this mode.",
+            [StringID.Message_AvatarHasNoFxLayerStrangeBug] = "It seems impossible to setup an FX layer on this avatar.\nThis is a very strange bug. Could you report it with your configuration ?"
         };
 
         public static Dictionary<StringID, string> messagesJP = new Dictionary<StringID, string>
@@ -182,7 +184,8 @@ namespace Myy
             [StringID.Label_HiddenWhenOff] = "固定するまで、アイテムを隠す",
             [StringID.Label_DontDisableConstraints] = "固定する時、既設のConstraintを無効化する",
             [StringID.Message_AvatarAlreadyConfiguredParticles] = 
-                "このモードでは、すでに装備しているアバターコピーにアイテムを装備することはできません。"
+                "このモードでは、すでに装備しているアバターコピーにアイテムを装備することはできません。",
+            [StringID.Message_AvatarHasNoFxLayerStrangeBug] = "FXを定義出来ないアバターみたいです。\nこのバグは非常に珍しいですから、報告出来たら幸いです"
         };
 
         public static Dictionary<StringID, string> currentTranslation = messagesJP;

@@ -4,6 +4,7 @@ using UnityEngine;
 using VRC.SDK3.Avatars.Components;
 using UnityEditor.Animations;
 using VRC.SDK3.Avatars.ScriptableObjects;
+using System;
 
 namespace Myy
 {
@@ -11,61 +12,66 @@ namespace Myy
     /**
      * <summary>Utility functions to deal with VRChat specific objects</summary>
      */
-    public class MyyVRCHelpers
+    public static class MyyVRCHelpers
     {
-        /**
-         * <returns>The index of the FX Layer, in the baseAnimationLayers</returns>
-         */
-        private static int FXLayerIndex(VRCAvatarDescriptor avatar)
+
+        public static int FindAnimLayerIndex(
+            VRCAvatarDescriptor.CustomAnimLayer[] layers,
+            VRCAvatarDescriptor.AnimLayerType layerType)
         {
-            VRCAvatarDescriptor.CustomAnimLayer[] layers = avatar.baseAnimationLayers;
-            int nLayers = layers.Length;
-            for (int i = 0; i < nLayers; i++)
-            {
-                if (layers[i].type == VRCAvatarDescriptor.AnimLayerType.FX)
-                {
-                    return i;
-                }
-            }
-            return (int)VRCAvatarDescriptor.AnimLayerType.Deprecated0 - 1;
+            return Array.FindIndex<VRCAvatarDescriptor.CustomAnimLayer>(
+                layers,
+                (VRCAvatarDescriptor.CustomAnimLayer layer) => { return layer.type == layerType; });
         }
 
-        /**
-         * <summary>Get the FX Animation Layer of a VRChat avatar object.</summary>
-         *
-         * <param name="avatar">The VRChat avatar to get the FX Animation Layer from</param>
-         * 
-         * <returns>
-         * The FX Animation Layer of the provided VRChat avatar.
-         * </returns>
-         */
-        public static VRCAvatarDescriptor.CustomAnimLayer AvatarGetFXLayer(
-            VRCAvatarDescriptor avatar)
+        public static VRCAvatarDescriptor.CustomAnimLayer GetAnimLayer(
+            VRCAvatarDescriptor.CustomAnimLayer[] layers,
+            VRCAvatarDescriptor.AnimLayerType layerType)
         {
-            return (avatar.baseAnimationLayers[FXLayerIndex(avatar)]);
+            int index = FindAnimLayerIndex(layers, layerType);
+            return layers[index];
         }
 
-        /**
-         * <summary>
-         * Setup a VRChat Avatar to use the provided Animation layer
-         * as the FX Layer.
-         * </summary>
-         * 
-         * <remarks>
-         * This is mainly used in combination with AvatarGetFXLayer, since
-         * layers are actually C# struct, meaning that the typical setup patter is :
-         * Get / Modify / Set.
-         * </remarks>
-         * 
-         * <param name="avatar"></param>
-         * <param name="fxLayer"></param>
-         */
-        public static void AvatarSetFXLayer(
-            VRCAvatarDescriptor avatar,
-            VRCAvatarDescriptor.CustomAnimLayer fxLayer)
+        public static void SetAnimLayer(
+            VRCAvatarDescriptor.CustomAnimLayer[] layers,
+            VRCAvatarDescriptor.AnimLayerType layerType,
+            VRCAvatarDescriptor.CustomAnimLayer layerData)
         {
-            avatar.baseAnimationLayers[FXLayerIndex(avatar)] = fxLayer;
+            int index = FindAnimLayerIndex(layers, layerType);
+            layers[index] = layerData;
         }
+
+        public static bool HasBaseAnimLayer(
+            this VRCAvatarDescriptor avatar,
+            VRCAvatarDescriptor.AnimLayerType layerType)
+            => FindAnimLayerIndex(avatar.baseAnimationLayers, layerType) != -1;
+
+        public static bool HasSpecialAnimLayer(
+            this VRCAvatarDescriptor avatar,
+            VRCAvatarDescriptor.AnimLayerType layerType)
+            => FindAnimLayerIndex(avatar.specialAnimationLayers, layerType) != -1;
+
+        public static VRCAvatarDescriptor.CustomAnimLayer GetBaseLayer(
+            this VRCAvatarDescriptor avatar,
+            VRCAvatarDescriptor.AnimLayerType layerType)
+            => GetAnimLayer(avatar.baseAnimationLayers, layerType);
+
+        public static void SetBaseLayer(
+            this VRCAvatarDescriptor avatar,
+            VRCAvatarDescriptor.AnimLayerType layerType,
+            VRCAvatarDescriptor.CustomAnimLayer layerData)
+            => SetAnimLayer(avatar.baseAnimationLayers, layerType, layerData);
+
+        public static VRCAvatarDescriptor.CustomAnimLayer GetSpecialLayer(
+            this VRCAvatarDescriptor avatar,
+            VRCAvatarDescriptor.AnimLayerType layerType)
+        => GetAnimLayer(avatar.specialAnimationLayers, layerType);
+
+        public static void SetSpecialLayer(
+            this VRCAvatarDescriptor avatar,
+            VRCAvatarDescriptor.AnimLayerType layerType,
+            VRCAvatarDescriptor.CustomAnimLayer layerData)
+        => SetAnimLayer(avatar.specialAnimationLayers, layerType, layerData);
 
         /**
          * <summary>Sets the FX Animation Controller of a VRChat avatar.</summary>
@@ -77,13 +83,14 @@ namespace Myy
             VRCAvatarDescriptor avatar,
             AnimatorController controller)
         {
-            avatar.customizeAnimationLayers = true;
+            if (!avatar.HasBaseAnimLayer(VRCAvatarDescriptor.AnimLayerType.FX)) return;
 
-            var layer = AvatarGetFXLayer(avatar);
+            avatar.customizeAnimationLayers = true;
+            var layer = avatar.GetBaseLayer(VRCAvatarDescriptor.AnimLayerType.FX);
             layer.isEnabled = true;
             layer.isDefault = false;
             layer.animatorController = controller;
-            AvatarSetFXLayer(avatar, layer);
+            avatar.SetBaseLayer(VRCAvatarDescriptor.AnimLayerType.FX, layer);
         }
 
         /**
