@@ -27,7 +27,7 @@ namespace Myy
             assetManager = new MyyAssetsManager();
             nameInMenu = (titleInMenu == "" ? MyyVRCHelpers.MenuFriendlyName(go.name) : titleInMenu);
 
-            additionalHierarchy = new GameObject();
+            //additionalHierarchy = new GameObject();
             animVariableName = variablePrefix;
             prepared = false;
         }

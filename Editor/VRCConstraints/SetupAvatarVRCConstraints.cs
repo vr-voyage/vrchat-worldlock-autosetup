@@ -1,22 +1,24 @@
 ﻿#if UNITY_EDITOR
 
 using UnityEngine;
-using System;
-using VRC.SDK3.Avatars.Components;
-using UnityEditor.Animations;
-using VRC.SDK3.Avatars.ScriptableObjects;
 using UnityEditor;
+using UnityEditor.Animations;
+
+using System;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Collections.Generic;
 using System.IO;
 
+using VRC.SDK3.Avatars.ScriptableObjects;
+using VRC.SDK3.Avatars.Components;
+
 namespace Myy
 {
 
-    public class SetupAvatarConstraints
+    public class SetupAvatarVRCConstraints
     {
-        private SetupObjectConstraints[] objects;
+        private SetupObjectVRCConstraints[] objects;
 
         const string mainPrefix = "V-WLAS-";
         const string variableNamePrefix = mainPrefix + "Lock";
@@ -32,9 +34,9 @@ namespace Myy
         public MyyAssetsManager assetsBase;
         private string avatarCopyName;
 
-        public SetupAvatarConstraints()
+        public SetupAvatarVRCConstraints()
         {
-            objects = new SetupObjectConstraints[0];
+            objects = new SetupObjectVRCConstraints[0];
 
             assetsBase = new MyyAssetsManager();
             avatarCopyName = null;
@@ -83,7 +85,7 @@ namespace Myy
         public bool PrepareObjects(MyyAssetsManager runAssets)
         {
             bool atLeastOnePrepared = false;
-            foreach (SetupObjectConstraints o in objects)
+            foreach (SetupObjectVRCConstraints o in objects)
             {
                 string objectName = o.fixedObject.name;
                 string objectFolderName = MyyAssetsManager.FilesystemFriendlyName(objectName);
@@ -105,14 +107,14 @@ namespace Myy
             return atLeastOnePrepared;
         }
 
-        private void GenerateSetup(GameObject[] objectsToFix, ConstraintsGlobalOptions options, int startFrom)
+        private void GenerateSetup(GameObject[] objectsToFix, VRCConstraintsGlobalOptions options, int startFrom)
         {
             int nObjects = objectsToFix.Length;
-            objects = new SetupObjectConstraints[nObjects];
+            objects = new SetupObjectVRCConstraints[nObjects];
 
             for (int i = 0; i < nObjects; i++)
             {
-                objects[i] = new SetupObjectConstraints(
+                objects[i] = new SetupObjectVRCConstraints(
                     objectsToFix[i],
                     variableNamePrefix + (startFrom + i),
                     options);
@@ -323,14 +325,10 @@ namespace Myy
             }
         }
 
-        private void AttachToAvatar(VRCAvatarDescriptor avatar, MyyAssetsManager runAssets)
+        private VRCExpressionParameters PrepareParameters(MyyAssetsManager assets, VRCAvatarDescriptor avatarCopy)
         {
-
-            VRCAvatarDescriptor avatarCopy = CopyAvatar(avatar);
-            avatarCopy.name = avatarCopyName;
-
             VRCExpressionParameters parameters =
-                runAssets.ScriptAssetCopyOrCreate<VRCExpressionParameters>(
+                assets.ScriptAssetCopyOrCreate<VRCExpressionParameters>(
                     avatarCopy.expressionParameters, mainMenuParametersFileName);
 
             if (parameters.parameters == null)
@@ -338,14 +336,20 @@ namespace Myy
                 MyyVRCHelpers.ResetParameters(parameters);
             }
 
-            VRCExpressionsMenu menu = runAssets.ScriptAssetCopyOrCreate<VRCExpressionsMenu>(
+            return parameters;
+        }
+
+        private (VRCExpressionsMenu, VRCExpressionsMenu, MenuEntries) PrepareMenu(MyyAssetsManager assets, VRCAvatarDescriptor avatarCopy)
+        {
+            VRCExpressionsMenu menu = assets.ScriptAssetCopyOrCreate<VRCExpressionsMenu>(
                 avatarCopy.expressionsMenu,
                 mainMenuFileName);
 
+            EditorUtility.SetDirty(menu);
             var previousMenuControl = FindPreviousSubMenuControl(menu);
             MenuEntries entries = CopyPreviousMenuControls(previousMenuControl);
 
-            VRCExpressionsMenu subMenu = runAssets.ScriptAssetCopyOrCreate<VRCExpressionsMenu>(null, ourMenuFileName);
+            VRCExpressionsMenu subMenu = assets.ScriptAssetCopyOrCreate<VRCExpressionsMenu>(null, ourMenuFileName);
             AssetDatabase.SetLabels(subMenu, assetLabels);
             if (previousMenuControl != null)
             {
@@ -355,72 +359,101 @@ namespace Myy
             {
                 MyyVRCHelpers.VRCMenuAddSubMenu(menu, subMenu, mainSubMenuName);
             }
+            return (menu, subMenu, entries);
+        }
 
-            
-            
-            /* FIXME Generate as many menu as necessary when more than 8 items are locked down */
-            //runAssets.GenerateAsset(subMenu, ourMenuFileName, assetLabels);
-
-            AnimatorController controller;
+        private AnimatorController CopyOrCreateFXController(MyyAssetsManager assets, VRCAvatarDescriptor avatarCopy)
+        {
+            AnimatorController fxController;
             string controllerName = "FX";
+            var fxLayer = avatarCopy.GetBaseLayer(VRCAvatarDescriptor.AnimLayerType.FX);
+            if (fxLayer.animatorController != null)
             {
-                var fxLayer = avatarCopy.GetBaseLayer(VRCAvatarDescriptor.AnimLayerType.FX);
-                if (fxLayer.animatorController != null)
-                {
-                    controller = runAssets.ControllerBackup(
-                        (AnimatorController)fxLayer.animatorController,
-                        controllerName);
-                }
-                else
-                {
-                    controller = runAssets.GenerateAnimController(controllerName);
-                }
+                fxController = assets.ControllerBackup(
+                    (AnimatorController)fxLayer.animatorController,
+                    controllerName);
             }
-            AssetDatabase.SetLabels(controller, assetLabels);
+            else
+            {
+                fxController = assets.GenerateAnimController(controllerName);
+            }
 
+            AssetDatabase.SetLabels(fxController, assetLabels);
+            return fxController;
+        }
+
+        private void AttachToAvatar(VRCAvatarDescriptor avatar, MyyAssetsManager runAssets, VRCConstraintsGlobalOptions options)
+        {
+            /* Copy the avatar */
+            VRCAvatarDescriptor avatarCopy = CopyAvatar(avatar);
+            avatarCopy.name = avatarCopyName;
+
+            /* Copy or Create the avatar expressions parameters and menu */
+            VRCExpressionParameters parameters = PrepareParameters(runAssets, avatar);
+            (VRCExpressionsMenu menu, VRCExpressionsMenu subMenu, MenuEntries entries) = PrepareMenu(runAssets, avatar);
+
+            /* Copy or Create the FX Playable Layer Animator Controller */
+            AnimatorController fxController = CopyOrCreateFXController(runAssets, avatar);
+
+            /* Setup the avatar copy with our new expressions menu, parameters and FX Playable Layer Animator Controller */
             avatarCopy.customExpressions = true;
             avatarCopy.expressionsMenu = menu;
             avatarCopy.expressionParameters = parameters;
+            MyyVRCHelpers.AvatarSetFXLayerController(avatarCopy, fxController);
 
-            MyyVRCHelpers.AvatarSetFXLayerController(avatarCopy, controller);
-
-            /* Setup a container for stations proxies */
-            GameObject stationsProxies = FindOrCreateStationProxies(avatarCopy.transform);
-
-            foreach (SetupObjectConstraints toAttach in objects)
+            /* 
+             * Setup a container for stations proxies if the item is hidden by default
+             * 
+             * The idea behind this is :
+             * - Stations on objects that are disabled by default are BROKEN.
+             *   Meaning that even when the object gets enabled, the station will be
+             *   unuseable.
+             * - Therefore, we need to put them on a separate 'Empty' object that
+             *   will stay enabled all the time.
+             * - To avoid people seating on the station when the object is disabled,
+             *   the Collider component will be enabled and disabled along
+             *   with the object. So when the object is disabled, the Collider 
+             * - Since the Empty object will be separated from the item, we'll put a
+             *   Parent Constraint that will be enabled when item is shown, making it
+             *   look like the Chair was always there.
+             * 
+             * Hence the name 'Station Proxy'. The actual Station is removed and a
+             * substitute, that acts like the actual one, is added.
+             * */
+            GameObject stationsProxies = null;
+            if (options.hideWhenOff)
             {
-                
+                stationsProxies = FindOrCreateStationProxies(avatarCopy.transform);
+            }
+            
+            foreach (SetupObjectVRCConstraints toAttach in objects)
+            {
+                /* If we couldn't prepare the object, forget about it */ 
                 if (!toAttach.IsPrepared()) continue;
 
+                /* Add the object to the hierarchy */ 
                 toAttach.AttachHierarchy(avatarCopy.gameObject);
-                toAttach.FixConstraintSources(avatar.gameObject, avatarCopy.gameObject);
-                toAttach.SetupStations(stationsProxies);
+                toAttach.FixExternalConstraintSources(avatar.gameObject, avatarCopy.gameObject);
+                toAttach.SetupStationsProxies(stationsProxies);
+                    
                 string variableName = toAttach.animVariableName;
 
-                AnimatorControllerParameter param =
-                    MyyAnimHelpers.ControllerGetParam(controller, variableName);
-
-                if (param == null)
-                {
-                    param = new AnimatorControllerParameter
-                    {
+                AnimatorControllerParameter param = 
+                    new AnimatorControllerParameter {
                         name = variableName,
                         type = AnimatorControllerParameterType.Bool,
                         defaultBool = false
                     };
-                }
-                controller.AddParameter(param);
+                fxController.AddParameter(param);
 
-                /* FIXME Set this elsewhere */
-                AnimatorStateMachine machineOnOff = toAttach.StateMachine(SetupObjectConstraints.MachineIndex.WorldLock);
-                MyyAnimHelpers.ControllerAddLayer(controller, machineOnOff);
+                AnimatorStateMachine machineOnOff = toAttach.StateMachine(SetupObjectVRCConstraints.MachineIndex.WorldLocked);
+                MyyAnimHelpers.ControllerAddLayer(fxController, machineOnOff);
                 MyyVRCHelpers.VRCParamsGetOrAddParam(parameters, param);
 
                 entries.AddToggle(toAttach.nameInMenu, toAttach.animVariableName);
             }
 
             entries.InsertIntoMenu(menu: subMenu, assetsManager: runAssets, labels: assetLabels);
-            EditorUtility.SetDirty(menu);
             EditorUtility.SetDirty(subMenu);
             EditorUtility.SetDirty(parameters);
             AssetDatabase.SaveAssets();
@@ -466,7 +499,7 @@ namespace Myy
             return suffixes.Last() + 1;
         }
 
-        public void Setup(VRCAvatarDescriptor avatar, ConstraintsGlobalOptions options, params GameObject[] objectsToFix)
+        public void Setup(VRCAvatarDescriptor avatar, VRCConstraintsGlobalOptions options, params GameObject[] objectsToFix)
         {
             if (!assetsBase.CanAccessSavePath())
             {
@@ -493,7 +526,6 @@ namespace Myy
              */
             int startFrom = NextLockVariableNumber(avatar);
             GenerateSetup(objectsToFix, options, startFrom);
-
             MyyAssetsManager runAssets = PrepareRun(avatar);
             if (runAssets == null)
             {
@@ -506,7 +538,7 @@ namespace Myy
                 return;
             }
 
-            AttachToAvatar(avatar, runAssets);
+            AttachToAvatar(avatar, runAssets, options);
         }
 
     }

@@ -23,161 +23,21 @@ namespace Myy
 
         public enum ClipIndex
         {
-            ON,
-            OFF,
+            WorldLocked,
+            NotWorldLocked,
             COUNT
         }
 
         public enum MachineIndex
         {
-            ONOFF,
+            WorldLock,
             COUNT
         }
 
         public enum ParameterIndex
         {
-            ONOFF,
+            WorldLock,
             COUNT
-        }
-
-
-
-        public class ProxiedStation
-        {
-            public GameObject proxy;
-            public GameObject original;
-            public string pathWithParent;
-            public bool setupDone;
-
-
-            public ProxiedStation(GameObject stationToProxy)
-            {
-                this.original = stationToProxy;
-                this.proxy = null;
-                this.pathWithParent = "";
-                this.setupDone = false;
-            }
-
-            public bool SetupProxy(GameObject proxyParent)
-            {
-                Debug.Log($"[SetupObjectConstraints] [SetupProxy] Original scale : {original.transform.localScale} {original.transform.lossyScale}");
-                GameObject newProxy = UnityEngine.Object.Instantiate(original, proxyParent.transform);
-                /* Ensure the name is unique */
-                newProxy.name += $"-{newProxy.GetInstanceID()}";
-
-                /* If none removed, none were found */
-                if (original.RemoveComponents<VRCStation>() == false)
-                {
-                    MyyLogger.LogWarning($"In the end, no stations were found on object {original.name}");
-                    return false;
-                }
-
-                /* I assume that the colliders present were for the station */
-                if (original.RemoveComponents<Collider>() == false)
-                {
-                    /* If none were found, add one to the proxy,
-                     * else the station won't work */
-                    MyyLogger.Log(
-                        $"Adding a collider to {original.name} proxy, "+
-                        "since none were found on the original");
-                    var collider = newProxy.AddComponent<BoxCollider>();
-                    collider.isTrigger = true;
-                }
-
-                /* Zero the position and rotation, since it will move
-                 * using a Parent Constraint */
-                /* Don't reset the scale, as it won't be set by
-                 * the parent constraint, and this might affect the collider */
-                newProxy.transform.localPosition = Vector3.zero;
-                newProxy.transform.localRotation = Quaternion.identity;
-                newProxy.RemoveChildren();
-                newProxy.KeepOnlyComponents(typeof(VRCStation), typeof(Collider));
-                newProxy.GetComponent<VRCStation>().enabled = false;
-                foreach (var collider in newProxy.GetComponents<Collider>())
-                {
-                    collider.enabled = false;
-                }
-
-                ParentConstraint constraint = newProxy.AddComponent<ParentConstraint>();
-                constraint.AddSource(original);
-                constraint.constraintActive = true;
-                constraint.locked = true;
-                constraint.weight = 1.0f;
-                constraint.enabled = false;
-
-                this.proxy = newProxy;
-                this.pathWithParent = $"{proxyParent.name}/{newProxy.name}";
-                this.setupDone = true;
-                return true;
-            }
-
-        }
-
-        public class ProxiedStations : List<ProxiedStation>
-        {
-            public bool SetupProxies(GameObject proxiesParent)
-            {
-                bool ret = true;
-                foreach (var station in this)
-                {
-                    bool stationSetup = station.SetupProxy(proxiesParent);
-                    if (!stationSetup)
-                    {
-                        MyyLogger.LogWarning(
-                            $"Could not setup station proxy for {station.original.name}");
-                    }
-                    ret &= stationSetup;
-                }
-                return ret;
-            }
-
-            public void AddIfNeeded(GameObject gameObject)
-            {
-                if (gameObject.TryGetComponent<VRCStation>(out VRCStation station))
-                {
-                    Add(new ProxiedStation(station.gameObject));
-                }
-            }
-
-            /* TODO Why not add the curves to the AnimationClip directly ? */
-            public void AddCurves(AnimationClip off, AnimationClip on)
-            {
-                AnimationClip[] clips = { off, on };
-                foreach (var proxiedStation in this)
-                {
-                    if (!proxiedStation.setupDone)
-                    {
-                        continue;
-                    }
-
-                    /* Take the first one. Won't bother if there's many colliders. */
-                    var collider = proxiedStation.proxy.GetComponents<Collider>()[0];
-
-                    System.Type[] toggledComponentTypes = new System.Type[]
-                    {
-                        typeof(VRCStation),
-                        typeof(ParentConstraint),
-                        collider.GetType()
-                    };
-
-                    foreach (var componentType in toggledComponentTypes)
-                    {
-                        /* This only works because :
-                         *   offCurves are set to index 0
-                         *   onCurves are set to index 1
-                         *   curve[0] will have Component.m_Enabled set to 0
-                         *   curve[1] will have Component.m_Enabled set to 1
-                         */
-
-                        for (int i = 0; i < clips.Length; i++)
-                        {
-                            clips[i].SetCurve(proxiedStation.pathWithParent, componentType, "m_Enabled", i);
-                        }
-                    }
-
-
-                }
-            }
         }
 
         private ProxiedStations proxiedStations = new ProxiedStations();
@@ -208,7 +68,7 @@ namespace Myy
 
         private void ParametersInit()
         {
-            parameters[(int)ParameterIndex.ONOFF] = MyyAnimHelpers.Parameter(animVariableName, false);
+            parameters[(int)ParameterIndex.WorldLock] = MyyAnimHelpers.Parameter(animVariableName, false);
         }
 
         public AnimatorStateMachine StateMachine(MachineIndex index)
@@ -387,9 +247,9 @@ namespace Myy
                 fixedCopy.transform.localPosition = Vector3.zero;*/
                 //clips[(int)ClipIndex.OFF].SetCurve(showHidePath, typeof(Transform), "m_LocalPosition", Vector3.zero);
                 lockedContainer.transform.localScale = Vector3.zero;
-                clips[(int)ClipIndex.OFF].SetCurve(showHidePath, typeof(Transform), "m_LocalScale", Vector3.zero);
+                clips[(int)ClipIndex.NotWorldLocked].SetCurve(showHidePath, typeof(Transform), "m_LocalScale", Vector3.zero);
                 //clips[(int)ClipIndex.ON].SetCurve(showHidePath, typeof(Transform), "m_LocalPosition", Vector3.);
-                clips[(int)ClipIndex.ON].SetCurve(showHidePath, typeof(Transform), "m_LocalScale", Vector3.one);
+                clips[(int)ClipIndex.WorldLocked].SetCurve(showHidePath, typeof(Transform), "m_LocalScale", Vector3.one);
             }
 
 
@@ -409,9 +269,9 @@ namespace Myy
                 {
                     foreach (var constraint in go.GetComponentsInChildren<IConstraint>())
                     {
-                        clips[(int)ClipIndex.ON].SetCurve(
+                        clips[(int)ClipIndex.WorldLocked].SetCurve(
                             lockedObjectPath, constraint.GetType(), "m_Enabled", ConstantCurve(false));
-                        clips[(int)ClipIndex.OFF].SetCurve(
+                        clips[(int)ClipIndex.NotWorldLocked].SetCurve(
                             lockedObjectPath, constraint.GetType(), "m_Enabled", ConstantCurve(true));
                     }
                 }
@@ -428,15 +288,15 @@ namespace Myy
             //string containerPath = PathToHierarchy();
             string containerPath = PathToContainer();
             GenerateAnimations(assetManager, clips, 
-                    ((int)ClipIndex.OFF, "OFF", new AnimProperties()),
-                    ((int)ClipIndex.ON, "ON", new AnimProperties())
+                    ((int)ClipIndex.NotWorldLocked, "OFF", new AnimProperties()),
+                    ((int)ClipIndex.WorldLocked, "ON", new AnimProperties())
             );
 
             if (options.hideWhenOff)
             {
-                clips[(int)ClipIndex.ON].SetCurve(
+                clips[(int)ClipIndex.WorldLocked].SetCurve(
                     containerPath, typeof(GameObject), "m_IsActive", true);
-                clips[(int)ClipIndex.OFF].SetCurve(
+                clips[(int)ClipIndex.NotWorldLocked].SetCurve(
                     containerPath, typeof(GameObject), "m_IsActive", false);
             }
 
@@ -446,9 +306,9 @@ namespace Myy
                 /* Commented : Not working optimized version */
                 /*clips[(int)ClipIndex.ON].SetCurve(
                     constraintPath, typeof(ParentConstraint), "m_Active", LinearCurve(true, false));*/
-                clips[(int)ClipIndex.ON].SetCurve(
+                clips[(int)ClipIndex.WorldLocked].SetCurve(
                     constraintPath, typeof(ParentConstraint), "m_Active", false);
-                clips[(int)ClipIndex.OFF].SetCurve(
+                clips[(int)ClipIndex.NotWorldLocked].SetCurve(
                     constraintPath, typeof(ParentConstraint), "m_Active", true);
             }
 
@@ -458,11 +318,11 @@ namespace Myy
 
         private bool StateMachineSetupOnOff(AnimatorStateMachine machineOnOff)
         {
-            string paramName = parameters[(int)ParameterIndex.ONOFF].name;
+            string paramName = parameters[(int)ParameterIndex.WorldLock].name;
 
 
-            AnimatorState objectOFF = machineOnOff.AddState("OFF", clips[(int)ClipIndex.OFF]);
-            AnimatorState objectON = machineOnOff.AddState("ON", clips[(int)ClipIndex.ON]);
+            AnimatorState objectOFF = machineOnOff.AddState("OFF", clips[(int)ClipIndex.NotWorldLocked]);
+            AnimatorState objectON = machineOnOff.AddState("ON", clips[(int)ClipIndex.WorldLocked]);
 
             objectOFF.AddTransition(objectON, AnimatorConditionMode.If, paramName, true);
             objectON.AddTransition(objectOFF, AnimatorConditionMode.IfNot, paramName, true);
@@ -491,11 +351,11 @@ namespace Myy
             foreach (var objectWithStation in objectsSet)
             {
                 /* FIXME In the end, it's always needed... */
-                proxiedStations.AddIfNeeded(objectWithStation);
+                proxiedStations.PrepareFor(objectWithStation);
             }
 
             proxiedStations.SetupProxies(stationsParent);
-            proxiedStations.AddCurves(clips[(int)ClipIndex.OFF], clips[(int)ClipIndex.ON]);
+            proxiedStations.AddCurves(clips[(int)ClipIndex.NotWorldLocked], clips[(int)ClipIndex.WorldLocked]);
 
             return true;
 
@@ -504,7 +364,7 @@ namespace Myy
 
         public bool StateMachinesSetup()
         {
-            return StateMachineSetupOnOff(machines[(int)MachineIndex.ONOFF]);
+            return StateMachineSetupOnOff(machines[(int)MachineIndex.WorldLock]);
         }
 
         public bool Prepare()
