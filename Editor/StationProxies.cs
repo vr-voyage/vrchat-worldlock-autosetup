@@ -130,7 +130,7 @@ namespace Myy
         }
 
         /* TODO Why not add the curves to the AnimationClip directly ? */
-        public void AddCurves(AnimationClip notWorldLocked, AnimationClip worldLocked)
+        public void AddCurvesTo(AnimationClip notWorldLocked, AnimationClip worldLocked)
         {
 
             foreach (var proxiedStation in this)

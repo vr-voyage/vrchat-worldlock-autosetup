@@ -15,14 +15,16 @@ namespace Myy
     [Serializable]
     public struct VRCConstraintsGlobalOptions
     {
-        public bool hideWhenOff;
+        public bool defaultToggledOn;
         public bool disableConstraintsOnLock;
         public bool resetItemPositionOnLock;
+        public bool toggleIndividually;
 
         public static VRCConstraintsGlobalOptions Default()
         {
             return new VRCConstraintsGlobalOptions() { 
-                hideWhenOff = false,
+                toggleIndividually = true,
+                defaultToggledOn = false,
                 disableConstraintsOnLock = true,
                 resetItemPositionOnLock = true
             };
@@ -34,6 +36,9 @@ namespace Myy
 
         public bool hiddenWhenOff = true;
         public bool disableConstraintsOnLock = true;
+        public bool toggleIndividually = true;
+        public bool defaultToggledOn = true;
+        public bool resetItemPositionOnUnlock = true;
         public GameObject[] worldLockedObjects = new GameObject[1];
         public UnityEngine.Object saveDir;
 
@@ -175,7 +180,10 @@ namespace Myy
             worldLockedObjects = new GameObject[1];
             hiddenWhenOff = true;
             disableConstraintsOnLock = true;
-        }
+            defaultToggledOn = true;
+            resetItemPositionOnUnlock = true;
+            toggleIndividually = true;
+    }
 
         #endregion
 
@@ -192,11 +200,13 @@ namespace Myy
             saveDir = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>("Assets");
 
             ui = new SimpleEditorUI(this,
-                (Translate(StringID.Label_AvatarToConfigure),      "avatar",                   AvatarUseable),
-                (Translate(StringID.Label_ObjectToLock),           "worldLockedObjects",       WorldLockedObjectsUseable),
-                (Translate(StringID.Label_HiddenWhenOff),          "hiddenWhenOff",            null),
-                (Translate(StringID.Label_DontDisableConstraints), "disableConstraintsOnLock", null),
-                (Translate(StringID.Label_SaveDirectory),          "saveDir",                  SaveDirectoryValid));
+                (Translate(StringID.Label_AvatarToConfigure),      "avatar",                    AvatarUseable),
+                (Translate(StringID.Label_ObjectToLock),           "worldLockedObjects",        WorldLockedObjectsUseable),
+                (Translate(StringID.Label_DefaultToggledOn),       "defaultToggledOn",          null),
+                (Translate(StringID.Label_ToggleIndividually),     "toggleIndividually",        null),
+                (Translate(StringID.Label_ResetPositionOnLock),    "resetItemPositionOnUnlock", null),
+                (Translate(StringID.Label_DontDisableConstraints), "disableConstraintsOnLock",  null),
+                (Translate(StringID.Label_SaveDirectory),          "saveDir",                   SaveDirectoryValid));
         }
 
         private void OnGUI()
@@ -217,8 +227,11 @@ namespace Myy
                 {
                     VRCConstraintsGlobalOptions options = new VRCConstraintsGlobalOptions()
                     {
-                        hideWhenOff       = hiddenWhenOff,
-                        disableConstraintsOnLock = disableConstraintsOnLock
+                        toggleIndividually       = toggleIndividually,
+                        resetItemPositionOnLock  = resetItemPositionOnUnlock,
+                        defaultToggledOn         = defaultToggledOn,
+                        disableConstraintsOnLock = disableConstraintsOnLock,
+
                     };
                     string saveDirPath = AssetDatabase.GetAssetPath(saveDir);
                     SetupAvatarVRCConstraints setupTool = new SetupAvatarVRCConstraints();

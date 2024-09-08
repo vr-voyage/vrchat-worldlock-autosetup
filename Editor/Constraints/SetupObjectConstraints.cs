@@ -355,7 +355,7 @@ namespace Myy
             }
 
             proxiedStations.SetupProxies(stationsParent);
-            proxiedStations.AddCurves(clips[(int)ClipIndex.NotWorldLocked], clips[(int)ClipIndex.WorldLocked]);
+            proxiedStations.AddCurvesTo(clips[(int)ClipIndex.NotWorldLocked], clips[(int)ClipIndex.WorldLocked]);
 
             return true;
 

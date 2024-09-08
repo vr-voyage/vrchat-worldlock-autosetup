@@ -397,6 +397,32 @@ namespace Myy
 
         /**
          * <summary>
+         * Compute the cost of the provided Animator Controller Parameters
+         * if they were to be converted into VRChat Expressions Parameters.
+         * </summary>
+         * 
+         * <param name="parameters">
+         * The Animator Controller Parameters to compute the potential cost from.
+         * </param>
+         * 
+         * <returns>
+         * The cost in bits needed by a VRChat Expression Parameter
+         * representing the Animator Controller Parameters provided.
+         * </returns>
+         */
+
+        public static int AnimTypeToVRCTypeCost(AnimatorControllerParameter[] parameters)
+        {
+            int cost = 0;
+            foreach (var parameter in parameters)
+            {
+                cost += VRCExpressionParameters.TypeCost(AnimTypeToVRCParamType(parameter.type));
+            }
+            return cost;
+        }
+
+        /**
+         * <summary>
          * Provide the VRChat Expressions Parameters used by VRChat default
          * animations controllers (Clap, Summersault, Drummer, ...)
          * </summary>

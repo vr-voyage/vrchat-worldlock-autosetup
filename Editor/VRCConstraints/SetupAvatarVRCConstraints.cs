@@ -27,8 +27,11 @@ namespace Myy
         const string mainMenuFileName = "SDK3-Expressions-Menu.asset";
         const string mainMenuParametersFileName = "SDK3-Expressions-Parameters.asset";
         const string ourMenuFileName = mainPrefix + "Expressions-Sub-Menu.asset";
+        const string itemMenuPrefix = mainPrefix + "World-Lock-";
         const string mainSubMenuName = "World Objects";
         const string stationsProxiesContainerName = mainPrefix + "Stations";
+        const string menuItemNameToggle = "Toggle";
+
         readonly string[] assetLabels = new string[] { "World-Lock Autosetup" };
         Regex avatarSuffixRegex = new Regex(avatarNameSuffix + @"-\d{6}-\d{6}");
         public MyyAssetsManager assetsBase;
@@ -116,7 +119,7 @@ namespace Myy
             {
                 objects[i] = new SetupObjectVRCConstraints(
                     objectsToFix[i],
-                    variableNamePrefix + (startFrom + i),
+                    mainPrefix + (startFrom + i),
                     options);
             }
 
@@ -421,7 +424,7 @@ namespace Myy
              * substitute, that acts like the actual one, is added.
              * */
             GameObject stationsProxies = null;
-            if (options.hideWhenOff)
+            if (options.defaultToggledOn)
             {
                 stationsProxies = FindOrCreateStationProxies(avatarCopy.transform);
             }
@@ -433,24 +436,45 @@ namespace Myy
 
                 /* Add the object to the hierarchy */ 
                 toAttach.AttachHierarchy(avatarCopy.gameObject);
-                toAttach.FixExternalConstraintSources(avatar.gameObject, avatarCopy.gameObject);
+                ConstraintsHelpers.FixExternalConstraintSources(avatar.gameObject, avatarCopy.gameObject, toAttach.worldFixedObjectCopy);
                 toAttach.SetupStationsProxies(stationsProxies);
-                    
-                string variableName = toAttach.animVariableName;
 
-                AnimatorControllerParameter param = 
-                    new AnimatorControllerParameter {
-                        name = variableName,
-                        type = AnimatorControllerParameterType.Bool,
-                        defaultBool = false
-                    };
-                fxController.AddParameter(param);
+                foreach (AnimatorControllerParameter param in toAttach.parameters)
+                {
+                    fxController.AddParameter(param);
+                    MyyVRCHelpers.VRCParamsGetOrAddParam(parameters, param);
+                }
 
-                AnimatorStateMachine machineOnOff = toAttach.StateMachine(SetupObjectVRCConstraints.MachineIndex.WorldLocked);
-                MyyAnimHelpers.ControllerAddLayer(fxController, machineOnOff);
-                MyyVRCHelpers.VRCParamsGetOrAddParam(parameters, param);
+                MenuEntries actualEntries = entries;
 
-                entries.AddToggle(toAttach.nameInMenu, toAttach.animVariableName);
+                AnimatorStateMachine worldLock = toAttach.StateMachine(SetupObjectVRCConstraints.MachineIndex.WorldLocked);
+                MyyAnimHelpers.ControllerAddLayer(fxController, worldLock);
+
+
+                if (toAttach.options.toggleIndividually)
+                {
+                    string itemNenuFileName = itemMenuPrefix + toAttach.nameInMenu + ".asset";
+                    actualEntries = new MenuEntries();
+                    VRCExpressionsMenu itemSubMenu = runAssets.ScriptAssetCopyOrCreate<VRCExpressionsMenu>(null, itemNenuFileName);
+                    AssetDatabase.SetLabels(itemSubMenu, assetLabels);
+                    MyyVRCHelpers.VRCMenuAddSubMenu(subMenu, itemSubMenu, toAttach.nameInMenu);
+
+
+                    actualEntries.AddToggle("ON", toAttach.worldLockAnimVariableName);
+
+                    AnimatorStateMachine machineOnOff = toAttach.StateMachine(SetupObjectVRCConstraints.MachineIndex.Toggle);
+                    MyyAnimHelpers.ControllerAddLayer(fxController, machineOnOff);
+                    actualEntries.AddToggle(
+                        TranslationStrings.Translate(TranslationStrings.StringID.VRCMenu_WorldLock),
+                        toAttach.toggleAnimVariableName);
+
+                    actualEntries.InsertIntoMenu(itemSubMenu, runAssets, assetLabels);
+                }
+                else
+                {
+                    actualEntries.AddToggle(menuItemNameToggle, toAttach.worldLockAnimVariableName);
+                }
+                
             }
 
             entries.InsertIntoMenu(menu: subMenu, assetsManager: runAssets, labels: assetLabels);
@@ -515,15 +539,14 @@ namespace Myy
                 return;
             }
 
-            if (!EnoughResourcesForSetup(avatar, objectsToFix.Length))
+            int multiplier = options.toggleIndividually ? 2 : 1;
+            if (!EnoughResourcesForSetup(avatar, objectsToFix.Length * multiplier))
             {
                 MyyLogger.LogError("Not enough ressources for the requested setup.");
                 MyyLogger.LogError("Most likely, the menu cost is too high");
                 return;
             }
 
-            /* FIXME Manage the global options correctly
-             */
             int startFrom = NextLockVariableNumber(avatar);
             GenerateSetup(objectsToFix, options, startFrom);
             MyyAssetsManager runAssets = PrepareRun(avatar);

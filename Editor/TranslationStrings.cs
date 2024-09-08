@@ -78,7 +78,12 @@ namespace Myy
             Label_HiddenWhenOff,
             Label_DontDisableConstraints,
             Message_AvatarAlreadyConfiguredParticles,
-            Message_AvatarHasNoFxLayerStrangeBug
+            Message_AvatarHasNoFxLayerStrangeBug,
+            Label_ResetPositionOnLock,
+            Label_ToggleIndividually,
+            Label_DefaultToggledOn,
+            VRCMenu_WorldLock,
+            VRCMenu_ToggleOn
         }
 
         public enum Lang
@@ -150,7 +155,12 @@ namespace Myy
             [StringID.Label_HiddenWhenOff] = "Hide these items when not locked",
             [StringID.Label_DontDisableConstraints] = "Disable these items own constraints when locked",
             [StringID.Message_AvatarAlreadyConfiguredParticles] = "Equipping another item on an already equipped avatar copy is not supported in this mode.",
-            [StringID.Message_AvatarHasNoFxLayerStrangeBug] = "It seems impossible to setup an FX layer on this avatar.\nThis is a very strange bug. Could you report it with your configuration ?"
+            [StringID.Message_AvatarHasNoFxLayerStrangeBug] = "It seems impossible to setup an FX layer on this avatar.\nThis is a very strange bug. Could you report it with your configuration ?",
+            [StringID.Label_ToggleIndividually] = "Add items toggle",
+            [StringID.Label_ResetPositionOnLock] = "Reset object position when unlocked",
+            [StringID.Label_DefaultToggledOn] = "Show the object by default",
+            [StringID.VRCMenu_WorldLock] = "Lock in place",
+            [StringID.VRCMenu_ToggleOn] = "ON"
         };
 
         public static Dictionary<StringID, string> messagesJP = new Dictionary<StringID, string>
@@ -185,7 +195,12 @@ namespace Myy
             [StringID.Label_DontDisableConstraints] = "固定する時、既設のConstraintを無効化する",
             [StringID.Message_AvatarAlreadyConfiguredParticles] = 
                 "このモードでは、すでに装備しているアバターコピーにアイテムを装備することはできません。",
-            [StringID.Message_AvatarHasNoFxLayerStrangeBug] = "FXを定義出来ないアバターみたいです。\nこのバグは非常に珍しいですから、報告出来たら幸いです"
+            [StringID.Message_AvatarHasNoFxLayerStrangeBug] = "FXを定義出来ないアバターみたいです。\nこのバグは非常に珍しいですから、報告出来たら幸いです",
+            [StringID.Label_ToggleIndividually] = "有無効ボタンを追加する",
+            [StringID.Label_ResetPositionOnLock] = "固定解除の時、原の位置に戻す",
+            [StringID.Label_DefaultToggledOn] = "通常にアイテムを表示する",
+            [StringID.VRCMenu_WorldLock] = "固定",
+            [StringID.VRCMenu_ToggleOn] = "ON"
         };
 
         public static Dictionary<StringID, string> currentTranslation = messagesJP;

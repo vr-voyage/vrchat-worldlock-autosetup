@@ -8,7 +8,6 @@ using UnityEditor.Animations;
 
 using System.Collections.Generic;
 
-using VRC.Dynamics;
 using VRC.SDK3.Avatars.Components;
 using VRC.SDK3.Dynamics.Constraint.Components;
 using VRC.SDKBase.Validation.Performance;
@@ -21,56 +20,72 @@ namespace Myy
     public class SetupObjectVRCConstraints : SetupObject
     {
         public GameObject worldFixedObjectCopy;
-        public VRCConstraintsGlobalOptions options =
-            VRCConstraintsGlobalOptions.Default();
+        public VRCConstraintsGlobalOptions options = VRCConstraintsGlobalOptions.Default();
+        public string worldLockAnimVariableName = "";
+        public string toggleAnimVariableName = "";
 
         public enum ClipIndex
         {
             WorldLocked,
             NotWorldLocked,
+            ToggleOff,
+            ToggleOn,
+            Dummy,
             COUNT
         }
 
         public enum MachineIndex
         {
             WorldLocked,
+            Toggle,
             COUNT
         }
 
         public enum ParameterIndex
         {
             WorldLocked,
+            Toggle,
             COUNT
         }
 
-
         private ProxiedStations proxiedStations = new ProxiedStations();
 
-
-        public static int VRCParametersCost()
-        {
-            return MyyVRCHelpers.AnimTypeToVRCTypeCost(AnimatorControllerParameterType.Bool);
-        }
-
-        public SetupObjectVRCConstraints(GameObject go, string variableName, VRCConstraintsGlobalOptions options)
-            : base(go, variableName)
+        public SetupObjectVRCConstraints(GameObject go, string variablePrefix, VRCConstraintsGlobalOptions options)
+            : base(go, variablePrefix)
         {
             this.options = options;
             clips = new AnimationClip[(int)ClipIndex.COUNT];
             machines = new AnimatorStateMachine[]
             {
+                new AnimatorStateMachine(),
                 new AnimatorStateMachine()
             };
-            parameters = new AnimatorControllerParameter[(int)ParameterIndex.COUNT];
-            ParametersInit();
+            if (options.toggleIndividually)
+            {
+                parameters = new AnimatorControllerParameter[(int)ParameterIndex.COUNT];
+            }
+            else
+            {
+                parameters = new AnimatorControllerParameter[1];
+            }
+
+            ParametersInit(variablePrefix);
 
             worldFixedObjectCopy = null;
         }
 
         /** <summary>Initialize the animator parameters used</summary> */
-        private void ParametersInit()
+        private void ParametersInit(string prefix)
         {
-            parameters[(int)ParameterIndex.WorldLocked] = MyyAnimHelpers.Parameter(animVariableName, false);
+            worldLockAnimVariableName = $"{prefix}-WorldLock";
+            toggleAnimVariableName = $"{prefix}-Toggle";
+
+            parameters[(int)ParameterIndex.WorldLocked] = MyyAnimHelpers.Parameter(worldLockAnimVariableName, false);
+            if (options.toggleIndividually)
+            {
+                parameters[(int)ParameterIndex.Toggle] = MyyAnimHelpers.Parameter(toggleAnimVariableName, options.defaultToggledOn);
+            }
+
         }
 
         /** <summary>Get the AnimatorStateMachine relative to the provided enum value</summary>
@@ -90,196 +105,13 @@ namespace Myy
             return fixedObject.name;
         }
 
-        /** <summary>
-         * Swap Unity Constraint sources referencing the original avatar
-         * to reference the copy on which the item is being setup
-         * </summary>
-         * 
-         * <example>
-         * For example, if the item to lock references the 'Head' of the avatar to be copied,
-         * we swap this reference to the 'Head of the copied avatar on which we're setting
-         * the item on.
-         * </example>
-         * 
-         * <param name="mainAvatar">The original avatar which the current item might reference</param>
-         * <param name="avatarCopy">
-         * The avatar reference to switch to,
-         * if the current item constraints references mainAvatar
-         * </param>
-         */
-        void FixUnityConstraintSources(GameObject avatar, GameObject avatarCopy)
-        {
-            List<ConstraintSource> constraintSources = new List<ConstraintSource>();
-            foreach (var constraint in worldFixedObjectCopy.GetComponentsInChildren<IConstraint>())
-            {
-                constraintSources.Clear();
-
-                /* Get the sources
-                 * Check if they refer to a member of the mainAvatar
-                 * If that's the case, find the same member in the copy
-                 * and set it as the new source.
-                 */
-                constraint.GetSources(constraintSources);
-                int nSources = constraintSources.Count;
-                for (int i = 0; i < nSources; i++)
-                {
-                    /* For each source transform set on the object,
-                     * Get the related GameObject (if any). */
-                    var source = constraintSources[i];
-                    if (source.sourceTransform == null) continue;
-
-                    GameObject sourceObject = source.sourceTransform.gameObject;
-                    if (sourceObject == null) continue;
-
-                    /* Check if there's a direct path between the source GameObject and
-                     * the maih Avatar */
-                    string relativePath = sourceObject.PathFrom(avatar);
-
-                    /* Since we can now add items to generated copies,
-                     * we need to try being a little smarter when it comes to relocating
-                     * Constraint sources.
-                     * So now, if the object doesn't appear to be fixed to the current Avatar,
-                     * we'll try to check if it's actually fixed to any avatar.
-                     * If that's the case, we'll use the path from that avatar to the
-                     * ConstraintSource and try to use it afterwards.
-                     */
-                    if (relativePath == null)
-                    {
-                        var owningAvatar = sourceObject.GetComponentInParent<VRCAvatarDescriptor>(true);
-                        if (owningAvatar == null) continue;
-
-                        if (owningAvatar.gameObject == null) continue;
-
-                        relativePath = sourceObject.PathFrom(owningAvatar.gameObject);
-                        Debug.Log($"[SetupObjectVRCConstraints] [FixConstraintSources] Mimicked relative path : {relativePath}");
-                    }
-
-                    if (relativePath == null) continue;
-
-                    /* Try to use the same relative path from the avatar copy, to
-                     * find a similar GameObject Transform. */
-                    Transform copyTransform = avatarCopy.transform.Find(relativePath);
-
-                    if (copyTransform == null) continue;
-
-                    /* Use the found GameObject Transform copy as the new source */
-                    source.sourceTransform = copyTransform;
-                    constraintSources[i] = source; // Structure needs to be copied back
-                }
-
-                /* Set the potentially modified sources back */
-                constraint.SetSources(constraintSources);
-
-            }
-        }
-
-        /** <summary>
-         * Swap VRChat Constraint sources referencing the original avatar
-         * to reference the copy on which the item is being setup
-         * </summary>
-         * 
-         * <example>
-         * For example, if the item to lock references the 'Right Hand' of the avatar to be copied,
-         * we swap this reference to the 'Right Hand' of the copied avatar on which we're setting
-         * the item on.
-         * </example>
-         * 
-         * <param name="mainAvatar">The original avatar which the current item might reference</param>
-         * <param name="avatarCopy">
-         * The avatar reference to switch to,
-         * if the current item constraints references mainAvatar
-         * </param>
-         */
-        /* FIXME Factorize */
-        void FixVRChatConstraintSources(GameObject avatar, GameObject avatarCopy)
-        {
-            foreach (var constraint in worldFixedObjectCopy.GetComponentsInChildren<VRCConstraintBase>())
-            {
-                VRCConstraintSourceKeyableList constraintList = constraint.Sources;
- 
-                int nSources = constraintList.Count;
-                for (int i = 0; i < nSources; i++)
-                {
-                    /* For each source transform set on the object,
-                     * Get the related GameObject (if any). */
-                    VRCConstraintSource source = constraintList[i];
-
-                    Transform sourceTransform = source.SourceTransform;
-                    if (sourceTransform == null) continue;
-
-                    GameObject sourceObject = sourceTransform.gameObject;
-                    if (sourceObject == null) continue;
-
-                    /* Check if there's a direct path between the source GameObject and
-                     * the maih Avatar */
-                    string relativePath = sourceObject.PathFrom(avatar);
-
-                    /* Since we can now add items to generated copies,
-                     * we need to try being a little smarter when it comes to relocating
-                     * Constraint sources.
-                     * So now, if the object doesn't appear to be fixed to the current Avatar,
-                     * we'll try to check if it's actually fixed to any avatar.
-                     * If that's the case, we'll use the path from that avatar to the
-                     * ConstraintSource and try to use it afterwards.
-                     */
-                    if (relativePath == null)
-                    {
-                        var owningAvatar = sourceObject.GetComponentInParent<VRCAvatarDescriptor>(true);
-                        if (owningAvatar == null)
-                        {
-                            Debug.Log("No avatar component found");
-                            Debug.Log($"Not available ? {sourceObject.transform.parent.parent.parent.parent.parent.parent.parent.parent.GetComponent<VRCAvatarDescriptor>() == null}");
-                            continue;
-                        }
-
-                        if (owningAvatar.gameObject == null)
-                        {
-                            Debug.Log("Could not get the avatar it's linked to...  ???");
-                            continue;
-                        }
-
-                        relativePath = sourceObject.PathFrom(owningAvatar.gameObject);
-                        Debug.Log($"[SetupObjectVRCConstraints] [FixConstraintSources] Mimicked relative path : {relativePath}");
-                    }
-
-                    if (relativePath == null) continue;
-
-                    /* Try to use the same relative path from the avatar copy, to
-                     * find a similar GameObject Transform. */
-                    Transform copyTransform = avatarCopy.transform.Find(relativePath);
-
-                    if (copyTransform == null) continue;
-
-                    /* Use the found GameObject Transform copy as the new source */
-                    source.SourceTransform = copyTransform;
-                    constraint.Sources[i] = source; // Structure needs to be copied back
-                }
-
-            }
-        }
-
-        /**
-         * <summary>
-         * Swap constraint sources referencing the original avatar
-         * to reference the copy on which the item is being setup
-         * </summary>
-         * 
-         * <param name="mainAvatar">The original avatar which the current item might reference</param>
-         * <param name="avatarCopy">
-         * The avatar reference to switch to,
-         * if the current item constraints references mainAvatar
-         * </param>
-         */
-        public void FixExternalConstraintSources(GameObject mainAvatar, GameObject avatarCopy)
-        {
-            FixUnityConstraintSources(mainAvatar, avatarCopy);
-            FixVRChatConstraintSources(mainAvatar, avatarCopy);
-        }
-
         /* FIXME : A dictionnary might be more relevant here */
         /** <summary>Retrieves all the components, and their relative transforms, inside a big array.</summary>
          * 
-         * <returns>An array of all the Constraints component found, whether they are Unity or VRChat constraints</returns>
+         * <returns>
+         * An array of all the Constraints component found,
+         * whether they are Unity or VRChat constraints
+         * </returns>
          */
          
         (Transform t, object component)[] CollectAllConstraintsInActualChildren(Transform parentTransform)
@@ -309,7 +141,9 @@ namespace Myy
         }
 
 
-        /** <summary>Prepare the animations to handle already setup Constraints when locking the object</summary>
+        /** <summary>
+         * Prepare the animations to handle already setup Constraints when locking the object
+         * </summary>
          * 
          * <param name="avatar">
          * The VRChat Avatar GameObject (copy) on which the items are setup.
@@ -369,6 +203,30 @@ namespace Myy
 
         }
 
+        /** <summary>Check if the old no toggle, always on behaviour is enabled</summary>
+         * 
+         * <remarks>
+         * <para>
+         * In the 'old always on behaviour', the world lock and 'showing up the item'
+         * was actually a single button. Meaning that when the item was toggle off,
+         * the button would toggle on AND world lock at the same time.
+         * </para>
+         * 
+         * <para>
+         * When the item was always on, though, the button would only world lock the item,
+         * but had no effect on the item appearing/disappearing.
+         * </para>
+         * </remarks>
+         * 
+         * <returns>
+         * true or false whether the old 'Always On' behaviour is available or not
+         * </returns>
+         */
+        bool OldAlwaysOnBehaviour()
+        {
+            return !(options.toggleIndividually || !options.defaultToggledOn);
+        }
+
         /** <summary>Attach the item to the Avatar</summary>
          * 
          * <param name="avatar">The VRChat Avatar GameObject (copy) to setup the item on</param>
@@ -380,7 +238,7 @@ namespace Myy
             /* Reuse the exact same name (and not something like "Name (Clone)")*/ 
             fixedCopy.name = fixedObject.name;
             /* Make the object Active if it wasn't */
-            fixedCopy.SetActive(true);
+            fixedCopy.SetActive(options.defaultToggledOn);
 
             /* Setup animations to disable the object constraints when locking the object if required */
             if (options.disableConstraintsOnLock)
@@ -396,56 +254,60 @@ namespace Myy
              */
             avatar.transform.position = new Vector3(0, 0, 0);
 
+            /* Prepare to add curves to the On/Off clips */
+            AnimationClip notWorldLockedClip = GetClip(ClipIndex.NotWorldLocked);
+            AnimationClip worldLockedClip = GetClip(ClipIndex.WorldLocked);
+            AnimationClip toggledOnClip = GetClip(ClipIndex.ToggleOn);
+            AnimationClip toggledOffClip = GetClip(ClipIndex.ToggleOff);
+            string animatedItemPath = fixedCopy.name;
+
             /* If a VRCParentConstraint is already setup on the avatar, we'll just reuse it.
              * Else, we make sure to add an Active one
              */
-            if (fixedCopy.GetComponent<VRCParentConstraint>() == null)
+            bool hadNoVRCConstraint = (fixedCopy.GetComponent<VRCParentConstraint>() == null);
+            bool hadNoUnityConstraints = (fixedCopy.GetComponent<IConstraint>() == null);
+            if (hadNoVRCConstraint)
             {
                 var component = fixedCopy.AddComponent<VRCParentConstraint>();
                 component.IsActive = true;
             }
 
-            /* Prepare to add curves to the On/Off clips */
-            AnimationClip offClip = clips[(int)ClipIndex.NotWorldLocked];
-            AnimationClip onClip = clips[(int)ClipIndex.WorldLocked]; 
-            string animatedItemPath = fixedCopy.name;
-
-            /* FIXME : Make it optional */
-            /* Move the object to the relative position set by default */
-            if (options.resetItemPositionOnLock)
-            {
-                Vector3 currentPosition = fixedCopy.transform.localPosition;
-                onClip.SetCurve(animatedItemPath, typeof(Transform), "m_LocalPosition", currentPosition);
-            }
-
-            fixedCopy.SetActive(!options.hideWhenOff);
-
-            /* If the user wants the item to be hidden by default
-             * We'll move the item to the avatar root and scale it to 0, while inactive
-             * and then scale it back when enabling the object */
-            if (options.hideWhenOff)
-            {
-                /* Remember the current scale */
-                Vector3 currentScale = fixedCopy.transform.localScale;
-
-                /* Reset the current position and scale.
-                 * We don't need to touch the rotation */
-                fixedCopy.transform.localScale = Vector3.zero;
-
-                /* Scale the object to 0 and move it to the avatar's origin when disabled */ 
-                offClip.SetCurve(animatedItemPath, typeof(Transform), "m_LocalScale", Vector3.zero);
-
-                /* Scale it back when enabled.
-                 * The movement is handled in any case */
-                onClip.SetCurve(animatedItemPath, typeof(Transform), "m_LocalScale", currentScale);
-
-                /* If we move back the item everytime we lock it, we can move it to 0 when off.
-                 * Else, we avoid the idea since the object will be locked at the avatar origin
-                 * on the first run */ 
+            if (hadNoVRCConstraint & hadNoUnityConstraints)
+            { 
+                /* FIXME : Make it optional */
+                /* Move the object to the relative position set by default */
                 if (options.resetItemPositionOnLock)
                 {
+                    Vector3 currentPosition = fixedCopy.transform.localPosition;
+                    Quaternion currentRotation = fixedCopy.transform.localRotation;
+
                     fixedCopy.transform.localPosition = Vector3.zero;
-                    offClip.SetCurve(animatedItemPath, typeof(Transform), "m_LocalPosition", Vector3.zero);
+
+                    Debug.Log($"Added to {fixedCopy.name}");
+                    notWorldLockedClip.SetCurve(animatedItemPath, typeof(Transform), "m_LocalPosition", currentPosition);
+                    notWorldLockedClip.SetCurve(animatedItemPath, typeof(Transform), "m_LocalRotation", currentRotation.eulerAngles);
+
+                    /* If the user wants the item to be hidden by default
+                     * We'll move the item to the avatar root and scale it to 0, while inactive
+                     * and then scale it back when enabling the object.
+                     * FIXME : Actually take into account all the cases where it's always on.
+                     */
+                    if (!OldAlwaysOnBehaviour())
+                    {
+                        /* Remember the current scale */
+                        Vector3 currentScale = fixedCopy.transform.localScale;
+
+                        /* Reset the current position and scale.
+                         * We don't need to touch the rotation */
+                        fixedCopy.transform.localScale = Vector3.zero;
+
+                        /* Scale the object to 0 and move it to the avatar's origin when disabled */
+                        toggledOffClip.SetCurve(animatedItemPath, typeof(Transform), "m_LocalScale", Vector3.zero);
+
+                        /* Scale it back when enabled.
+                         * The movement is handled in any case */
+                        toggledOnClip.SetCurve(animatedItemPath, typeof(Transform), "m_LocalScale", currentScale);
+                    }
                 }
             }
 
@@ -458,21 +320,38 @@ namespace Myy
         public bool GenerateAnims()
         {
             string animatedObjectPath = PathToObject();
-            GenerateAnimations(assetManager, clips, 
-                    ((int)ClipIndex.NotWorldLocked, "Not World Locked", new AnimProperties()),
-                    ((int)ClipIndex.WorldLocked, "World Locked", new AnimProperties())
+            GenerateAnimations(assetManager, clips,
+                ((int)ClipIndex.NotWorldLocked, "Not World Locked", new AnimProperties()),
+                ((int)ClipIndex.WorldLocked, "World Locked", new AnimProperties())
             );
 
-            AnimationClip notWorldLockedClip = clips[(int)ClipIndex.NotWorldLocked];
-            AnimationClip worldLockedClip = clips[(int)ClipIndex.WorldLocked];
-
-            /* FIXME : Move this to a separate animation triggered with a different button */
-            /* If the object is hidden by default, make sure it's enabled when activating the world lock */
-            if (options.hideWhenOff)
+            if (options.toggleIndividually)
             {
-                worldLockedClip.SetCurve(animatedObjectPath, typeof(GameObject), "m_IsActive", true);
-                notWorldLockedClip.SetCurve(animatedObjectPath, typeof(GameObject), "m_IsActive", false);
+                GenerateAnimations(assetManager, clips,
+                    ((int)ClipIndex.ToggleOff, "Toggled Off", new AnimProperties()),
+                    ((int)ClipIndex.ToggleOn, "Toggled On", new AnimProperties()));
             }
+            else
+            {
+                clips[(int)ClipIndex.ToggleOff] = clips[(int)ClipIndex.NotWorldLocked];
+                clips[(int)ClipIndex.ToggleOn] = clips[(int)ClipIndex.WorldLocked];
+            }
+
+            AnimationClip notWorldLockedClip = GetClip(ClipIndex.NotWorldLocked);
+            AnimationClip worldLockedClip = GetClip(ClipIndex.WorldLocked);
+            AnimationClip toggleOnClip = GetClip(ClipIndex.ToggleOn);
+            AnimationClip toggleOffClip = GetClip(ClipIndex.ToggleOff);
+
+            bool oldAlwaysOnBehaviour = !(options.toggleIndividually || !options.defaultToggledOn);
+
+            if (!oldAlwaysOnBehaviour)
+            {
+                Debug.LogWarning($"Setting up for {animatedObjectPath}");
+                /* Setup the toggle animation */
+                toggleOnClip.SetCurve(animatedObjectPath, typeof(GameObject), "m_IsActive", true);
+                toggleOffClip.SetCurve(animatedObjectPath, typeof(GameObject), "m_IsActive", false);
+            }
+
 
             /* Make sure the World VRChat Parent Constraint is Active when World Locking.
              * Just in case, another animation is trying to disable the constraint */ 
@@ -485,32 +364,84 @@ namespace Myy
             return true;
         }
 
-        /** <summary>Setup an Animator State Machine that will be used
-         * to handle World Lock for the current item</summary>
+        /** <summary>Setup an Animator State Machine to World Lock the current item</summary>
          * 
-         * <param name="machineOnOff">The Animator State Machine to setup</param>
+         * <param name="machineWorldLock">The Animator State Machine to setup</param>
          */
-        private bool StateMachineSetupWorldLocked(AnimatorStateMachine machineOnOff)
+        private bool StateMachineSetupWorldLock(AnimatorStateMachine machineWorldLock)
         {
-            string paramName = parameters[(int)ParameterIndex.WorldLocked].name;
+            string paramName = GetParameter(ParameterIndex.WorldLocked).name;
 
-            AnimationClip notWorldLockedClip = clips[(int)ClipIndex.NotWorldLocked];
-            AnimationClip worldLockedClip = clips[(int)ClipIndex.WorldLocked];
+            AnimationClip notWorldLockedClip = GetClip(ClipIndex.NotWorldLocked);
+            AnimationClip worldLockedClip = GetClip(ClipIndex.WorldLocked);
 
             /* Add the 'On' and 'Off' states to the state Machine */ 
-            AnimatorState objectNotLocked = machineOnOff.AddState("Not World Locked", notWorldLockedClip);
-            AnimatorState objectLocked = machineOnOff.AddState("World Locked", worldLockedClip);
+            AnimatorState objectNotLocked = machineWorldLock.AddState("Not World Locked", notWorldLockedClip);
+            AnimatorState objectLocked    = machineWorldLock.AddState("World Locked", worldLockedClip);
 
-            /* Connect 'Not Locked' to 'World Locked'
-             * And only transition if World Lock Parameter (Bool) is true */ 
+            /* Transition from 'Not Locked' to 'World Lock' if world lock is enabled */ 
             objectNotLocked.AddTransition(objectLocked, AnimatorConditionMode.If, paramName, true);
-            /* Connect 'World Locked' to 'Not Locked'
-             * And only transition if World Lock Parameter (Bool) is NOT true */
+
+            /* Transition from 'Locked' to 'Not Locked' if world lock is disabled */
             objectLocked.AddTransition(objectNotLocked, AnimatorConditionMode.IfNot, paramName, true);
 
-            machineOnOff.name = MyyAssetsManager.FilesystemFriendlyName(paramName + "-" + nameInMenu);
+            machineWorldLock.name = MyyAssetsManager.FilesystemFriendlyName(paramName + "-" + nameInMenu);
 
             return true;
+        }
+
+        /** <summary>Setup an Animator State Machine to toggle the object</summary>
+         * 
+         * <param name="machineToggle">The Animator State Machine to setup</param>
+         */
+
+        private bool StateMachineSetupToggle(AnimatorStateMachine machineToggle)
+        {
+            string paramName = GetParameter(ParameterIndex.Toggle).name;
+
+            AnimationClip toggleOffClip = GetClip(ClipIndex.ToggleOff);
+            AnimationClip toggleOnClip = GetClip(ClipIndex.ToggleOn);
+
+            /* Add the 'On' and 'Off' states to the state Machine */
+            AnimatorState toggledOffState = machineToggle.AddState("Toggle Off", toggleOffClip);
+            AnimatorState toggleOnState = machineToggle.AddState("Toggle On", toggleOnClip);
+
+            /* Transition from 'Not Locked' to 'World Lock' if world lock is enabled */
+            toggledOffState.AddTransition(toggleOnState, AnimatorConditionMode.If, paramName, true);
+
+            /* Transition from 'Locked' to 'Not Locked' if world lock is disabled */
+            toggleOnState.AddTransition(toggledOffState, AnimatorConditionMode.IfNot, paramName, true);
+
+            machineToggle.name = MyyAssetsManager.FilesystemFriendlyName(paramName + "-" + nameInMenu);
+
+            return true;
+        }
+
+        /** <summary>Get one of the animation clip used for World Locking</summary> 
+         * 
+         * <param name="clipIndex">The enumerator representing the clip to get</param>
+         */
+        private AnimationClip GetClip(ClipIndex clipIndex)
+        {
+            return clips[(int)clipIndex];
+        }
+
+        /** <summary>Get one of the state machine used for World Locking or Toggling</summary>
+         * 
+         * <param name="machineIndex">The enumerator representing the State Machine to get</param>
+         */
+        private AnimatorStateMachine GetStateMachine(MachineIndex machineIndex)
+        {
+            return machines[(int)machineIndex];
+        }
+
+        /** <summary>Get one of the parameter used for World Locking</summary>
+         * 
+         * <param name="parameterIndex">The enumerator representing the parameter to get</param>
+         */
+        private AnimatorControllerParameter GetParameter(ParameterIndex parameterIndex)
+        {
+            return parameters[(int)parameterIndex];
         }
 
         /** <summary>Setup the VRC Station Proxy objects</summary>
@@ -527,7 +458,7 @@ namespace Myy
                 return false;
             }
             /* Proxies are only useful when the object is disabled by default */
-            if (!options.hideWhenOff)
+            if (!options.defaultToggledOn)
             {
                 return false;
             }
@@ -547,6 +478,7 @@ namespace Myy
                 objectsWithStationSet.Add(station.gameObject);
             }
 
+            /* Add the object to the list of objects to prepare a proxy for */
             foreach (var objectWithStation in objectsWithStationSet)
             {
                 proxiedStations.PrepareFor(objectWithStation);
@@ -554,9 +486,11 @@ namespace Myy
 
             proxiedStations.SetupProxies(proxiesListObject);
 
-            AnimationClip notWorldLockedClip = clips[(int)ClipIndex.NotWorldLocked];
-            AnimationClip worldLockedClip = clips[(int)ClipIndex.WorldLocked];
-            proxiedStations.AddCurves(notWorldLockedClip, worldLockedClip);
+            /* Setup the World Lock ON, World Lock OFF animations clips in order to
+             * setup or desactivate the generated stations proxies */
+            proxiedStations.AddCurvesTo(
+                GetClip(ClipIndex.ToggleOff),
+                GetClip(ClipIndex.ToggleOn));
 
             return true;
 
@@ -565,7 +499,19 @@ namespace Myy
         /** <summary>Prepare the WorldLock State machine</summary> */
         public bool StateMachinesSetup()
         {
-            return StateMachineSetupWorldLocked(machines[(int)MachineIndex.WorldLocked]);
+            /* The world lock state machine is always set */
+            AnimatorStateMachine worldLockmachine = GetStateMachine(MachineIndex.WorldLocked);
+            bool machinesSetup = StateMachineSetupWorldLock(worldLockmachine);
+
+            if (!machinesSetup) return false;
+
+            /* The toggle state machine is only set if the user wants it */ 
+            if (options.toggleIndividually)
+            {
+                AnimatorStateMachine toggleMachine = GetStateMachine(MachineIndex.Toggle);
+                machinesSetup = StateMachineSetupToggle(toggleMachine);
+            }
+            return machinesSetup;
         }
 
         /** <summary>Prepare the animations and state machines that will be used to
