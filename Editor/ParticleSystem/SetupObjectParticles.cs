@@ -43,6 +43,7 @@ namespace Myy
         public SetupObjectParticles(GameObject go, string variableName)
             : base(go, variableName)
         {
+            additionalHierarchy = new GameObject();
             additionalHierarchy.name = "V-WLAS-ParticleSystem-" + fixedObject.name;
             parameters = new AnimatorControllerParameter[(int)ParameterIndex.COUNT];
             clips = new AnimationClip[(int)ClipIndex.COUNT];
