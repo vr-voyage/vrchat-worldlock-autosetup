@@ -160,7 +160,7 @@ namespace Myy
             [StringID.Label_ResetPositionOnLock] = "Reset object position when unlocked",
             [StringID.Label_DefaultToggledOn] = "Show the object by default",
             [StringID.VRCMenu_WorldLock] = "Lock in place",
-            [StringID.VRCMenu_ToggleOn] = "ON"
+            [StringID.VRCMenu_ToggleOn] = "Show"
         };
 
         public static Dictionary<StringID, string> messagesJP = new Dictionary<StringID, string>
@@ -200,7 +200,7 @@ namespace Myy
             [StringID.Label_ResetPositionOnLock] = "固定解除の時、原の位置に戻す",
             [StringID.Label_DefaultToggledOn] = "通常にアイテムを表示する",
             [StringID.VRCMenu_WorldLock] = "固定",
-            [StringID.VRCMenu_ToggleOn] = "ON"
+            [StringID.VRCMenu_ToggleOn] = "出す"
         };
 
         public static Dictionary<StringID, string> currentTranslation = messagesJP;

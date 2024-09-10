@@ -5,6 +5,7 @@ using UnityEditor;
 using UnityEditor.Animations;
 using UnityEngine;
 using UnityEngine.Animations;
+using VRC.Dynamics;
 using VRC.SDK3.Avatars.Components;
 
 namespace Myy
@@ -54,6 +55,7 @@ namespace Myy
             : base(go, variableName)
         {
             this.options = options;
+            additionalHierarchy = new GameObject();
             additionalHierarchy.name = worldLockSuffix + "-" + animVariableName;
             clips = new AnimationClip[(int)ClipIndex.COUNT];
             machines = new AnimatorStateMachine[]
@@ -267,12 +269,21 @@ namespace Myy
                 
                 if (options.disableConstraintsOnLock)
                 {
+                    var worldLockClip = clips[(int)ClipIndex.WorldLocked];
+                    var notWorldLockClip = clips[(int)ClipIndex.NotWorldLocked];
                     foreach (var constraint in go.GetComponentsInChildren<IConstraint>())
                     {
-                        clips[(int)ClipIndex.WorldLocked].SetCurve(
+                        worldLockClip.SetCurve(
                             lockedObjectPath, constraint.GetType(), "m_Enabled", ConstantCurve(false));
-                        clips[(int)ClipIndex.NotWorldLocked].SetCurve(
+                        notWorldLockClip.SetCurve(
                             lockedObjectPath, constraint.GetType(), "m_Enabled", ConstantCurve(true));
+                    }
+                    foreach (var vrcConstraint in go.GetComponentsInChildren<VRCConstraintBase>())
+                    {
+                        worldLockClip.SetCurve(
+                            lockedObjectPath, vrcConstraint.GetType(), "m_Enabled", ConstantCurve(false));
+                        notWorldLockClip.SetCurve(
+                            lockedObjectPath, vrcConstraint.GetType(), "m_Enabled", ConstantCurve(true));
                     }
                 }
 

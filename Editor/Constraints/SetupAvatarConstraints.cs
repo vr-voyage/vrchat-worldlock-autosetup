@@ -393,7 +393,8 @@ namespace Myy
                 if (!toAttach.IsPrepared()) continue;
 
                 toAttach.AttachHierarchy(avatarCopy.gameObject);
-                toAttach.FixConstraintSources(avatar.gameObject, avatarCopy.gameObject);
+                ConstraintsHelpers.FixExternalConstraintSources(avatar.gameObject, avatarCopy.gameObject, toAttach.copy);
+                //toAttach.FixConstraintSources(avatar.gameObject, avatarCopy.gameObject);
                 toAttach.SetupStations(stationsProxies);
                 string variableName = toAttach.animVariableName;
 
