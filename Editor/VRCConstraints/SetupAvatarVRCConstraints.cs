@@ -460,12 +460,14 @@ namespace Myy
                     MyyVRCHelpers.VRCMenuAddSubMenu(subMenu, itemSubMenu, toAttach.nameInMenu);
 
 
-                    actualEntries.AddToggle("ON", toAttach.worldLockAnimVariableName);
+                    actualEntries.AddToggle(
+                        TranslationStrings.Translate(TranslationStrings.StringID.VRCMenu_WorldLock),
+                        toAttach.worldLockAnimVariableName);
 
                     AnimatorStateMachine machineOnOff = toAttach.StateMachine(SetupObjectVRCConstraints.MachineIndex.Toggle);
                     MyyAnimHelpers.ControllerAddLayer(fxController, machineOnOff);
                     actualEntries.AddToggle(
-                        TranslationStrings.Translate(TranslationStrings.StringID.VRCMenu_WorldLock),
+                        TranslationStrings.Translate(TranslationStrings.StringID.VRCMenu_ToggleOn),
                         toAttach.toggleAnimVariableName);
 
                     actualEntries.InsertIntoMenu(itemSubMenu, runAssets, assetLabels);
@@ -502,14 +504,16 @@ namespace Myy
             List<int> suffixes = new List<int>(controller.parameters.Length);
             foreach (var parameter in controller.parameters)
             {
-                if (!parameter.name.StartsWith(variableNamePrefix))
+                if (!parameter.name.StartsWith(mainPrefix))
                 {
                     continue;
                 }
 
-                string parameterSuffix = parameter.name.Substring(variableNamePrefix.Length);
-
-                if (int.TryParse(parameterSuffix, out int suffix))
+                string parameterSuffix = parameter.name.Substring(mainPrefix.Length);
+                int nextDash = parameterSuffix.IndexOf("-");
+                if (nextDash < 0) { nextDash = parameterSuffix.Length; }
+                string numberPart = parameterSuffix.Substring(0, nextDash);
+                if (int.TryParse(numberPart, out int suffix))
                 {
                     suffixes.Add(suffix);
                 }

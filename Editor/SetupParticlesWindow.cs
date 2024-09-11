@@ -62,8 +62,14 @@ namespace Myy
             }
             if (!avatar.customExpressions) return true;
 
+            var expressionMenu = avatar.expressionsMenu;
+            if (expressionMenu == null) return true;
+
+            var controls = expressionMenu.controls;
+            if (controls == null) return true;
+
             int maxControlsAuthorized = VRCExpressionsMenu.MAX_CONTROLS - N_CONTROLS_ADDED;
-            if (avatar.expressionsMenu.controls.Count > maxControlsAuthorized)
+            if (controls.Count > maxControlsAuthorized)
             {
                 EditorGUILayout.HelpBox(
                     Translate(
