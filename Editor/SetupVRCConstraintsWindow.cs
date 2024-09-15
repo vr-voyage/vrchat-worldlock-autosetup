@@ -65,6 +65,30 @@ namespace Myy
                 return false;
             }
             if (!avatar.customExpressions) return true;
+            var expressionsMenu = avatar.expressionsMenu;
+            if (expressionsMenu == null) return true;
+
+            var controls = expressionsMenu.controls;
+            if (controls == null)
+            {
+                expressionsMenu.controls = new List<VRCExpressionsMenu.Control>();
+                controls = expressionsMenu.controls;
+            }
+            
+            int maxControlsAuthorized = VRCExpressionsMenu.MAX_CONTROLS - N_CONTROLS_ADDED;
+            if (controls.Count > maxControlsAuthorized)
+            {
+                EditorGUILayout.HelpBox(
+                    Translate(
+                        StringID.Message_InsufficientSpaceMainMenu,
+                        N_CONTROLS_ADDED, maxControlsAuthorized),
+                    MessageType.Error);
+                if (GUILayout.Button(Translate(StringID.Button_InspectExpressionMenu)))
+                {
+                    AssetDatabase.OpenAsset(avatar.expressionsMenu);
+                }
+                return false;
+            }
 
             return true;
         }
