@@ -237,8 +237,6 @@ namespace Myy
             GameObject fixedCopy = UnityEngine.Object.Instantiate(fixedObject, avatar.transform);
             /* Reuse the exact same name (and not something like "Name (Clone)")*/ 
             fixedCopy.name = fixedObject.name;
-            /* Make the object Active if it wasn't */
-            fixedCopy.SetActive(options.defaultToggledOn);
 
             /* Setup animations to disable the object constraints when locking the object if required */
             if (options.disableConstraintsOnLock)
@@ -280,12 +278,14 @@ namespace Myy
                 {
                     Vector3 currentPosition = fixedCopy.transform.localPosition;
                     Quaternion currentRotation = fixedCopy.transform.localRotation;
+                    Debug.Log($"{fixedCopy.name} current rotation {currentRotation.eulerAngles}");
+
+                    // localEulerAnglesRaw
 
                     fixedCopy.transform.localPosition = Vector3.zero;
 
-                    Debug.Log($"Added to {fixedCopy.name}");
+                    notWorldLockedClip.SetCurve(animatedItemPath, typeof(Transform), "localEulerAngles", currentRotation.eulerAngles);
                     notWorldLockedClip.SetCurve(animatedItemPath, typeof(Transform), "m_LocalPosition", currentPosition);
-                    notWorldLockedClip.SetCurve(animatedItemPath, typeof(Transform), "m_LocalRotation", currentRotation.eulerAngles);
 
                     /* If the user wants the item to be hidden by default
                      * We'll move the item to the avatar root and scale it to 0, while inactive

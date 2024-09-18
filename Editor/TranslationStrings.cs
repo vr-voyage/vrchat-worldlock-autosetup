@@ -156,7 +156,7 @@ namespace Myy
             [StringID.Label_DontDisableConstraints] = "Disable these items own constraints when locked",
             [StringID.Message_AvatarAlreadyConfiguredParticles] = "Equipping another item on an already equipped avatar copy is not supported in this mode.",
             [StringID.Message_AvatarHasNoFxLayerStrangeBug] = "It seems impossible to setup an FX layer on this avatar.\nThis is a very strange bug. Could you report it with your configuration ?",
-            [StringID.Label_ToggleIndividually] = "Add toggles for items",
+            [StringID.Label_ToggleIndividually] = "Separate the 'ON/OFF' and 'World Lock' buttons",
             [StringID.Label_ResetPositionOnLock] = "Reset object position when unlocked",
             [StringID.Label_DefaultToggledOn] = "Item out by default",
             [StringID.VRCMenu_WorldLock] = "Lock",
@@ -196,7 +196,7 @@ namespace Myy
             [StringID.Message_AvatarAlreadyConfiguredParticles] = 
                 "このモードでは、すでに装備しているアバターコピーにアイテムを装備することはできません。",
             [StringID.Message_AvatarHasNoFxLayerStrangeBug] = "FXを定義出来ないアバターみたいです。\nこのバグは非常に珍しいですから、報告出来たら幸いです",
-            [StringID.Label_ToggleIndividually] = "「出す」ボタンを追加する",
+            [StringID.Label_ToggleIndividually] = "「固定」と「出す」ボタンを別々にする",
             [StringID.Label_ResetPositionOnLock] = "固定を解除すると元の位置に戻す",
             [StringID.Label_DefaultToggledOn] = "デフォルトでアイテムを出す",
             [StringID.VRCMenu_WorldLock] = "固定",

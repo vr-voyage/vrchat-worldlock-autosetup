@@ -15,10 +15,10 @@ namespace Myy
     [Serializable]
     public struct VRCConstraintsGlobalOptions
     {
-        public bool defaultToggledOn;
         public bool disableConstraintsOnLock;
         public bool resetItemPositionOnLock;
         public bool toggleIndividually;
+        public bool defaultToggledOn;
 
         public static VRCConstraintsGlobalOptions Default()
         {
@@ -37,7 +37,7 @@ namespace Myy
         public bool hiddenWhenOff = true;
         public bool disableConstraintsOnLock = true;
         public bool toggleIndividually = true;
-        public bool defaultToggledOn = true;
+        public bool defaultToggledOn = false;
         public bool resetItemPositionOnUnlock = true;
         public GameObject[] worldLockedObjects = new GameObject[1];
         public UnityEngine.Object saveDir;
@@ -64,16 +64,12 @@ namespace Myy
                     MessageType.Info);
                 return false;
             }
-            if (!avatar.customExpressions) return true;
+            if (!avatar.customExpressions) { return true; }
             var expressionsMenu = avatar.expressionsMenu;
-            if (expressionsMenu == null) return true;
+            if (expressionsMenu == null) { return true; }
 
             var controls = expressionsMenu.controls;
-            if (controls == null)
-            {
-                expressionsMenu.controls = new List<VRCExpressionsMenu.Control>();
-                controls = expressionsMenu.controls;
-            }
+            if (controls == null) { return true; }
             
             int maxControlsAuthorized = VRCExpressionsMenu.MAX_CONTROLS - N_CONTROLS_ADDED;
             if (controls.Count > maxControlsAuthorized)
@@ -204,7 +200,6 @@ namespace Myy
             worldLockedObjects = new GameObject[1];
             hiddenWhenOff = true;
             disableConstraintsOnLock = true;
-            defaultToggledOn = true;
             resetItemPositionOnUnlock = true;
             toggleIndividually = true;
     }
@@ -253,9 +248,8 @@ namespace Myy
                     {
                         toggleIndividually       = toggleIndividually,
                         resetItemPositionOnLock  = resetItemPositionOnUnlock,
-                        defaultToggledOn         = defaultToggledOn,
                         disableConstraintsOnLock = disableConstraintsOnLock,
-
+                        defaultToggledOn = defaultToggledOn
                     };
                     string saveDirPath = AssetDatabase.GetAssetPath(saveDir);
                     SetupAvatarVRCConstraints setupTool = new SetupAvatarVRCConstraints();

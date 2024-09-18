@@ -138,6 +138,36 @@ namespace Myy
         }
 
         /**
+         * <summary>Define a constant curve with a Quaternion.</summary>
+         * 
+         * <remarks>
+         * This actually set 4 curves using :
+         * - propertyName.x
+         * - propertyName.y
+         * - propertyName.z
+         * - propertyName.w
+         * </remarks>
+         * 
+         * <param name="objectPath">Path to the affected object.</param>
+         * <param name="type">Type of the component driven by the curve.</param>
+         * <param name="propertyName">Serialized property name driven by the curve.</param>
+         * <param name="constantValue">Value used to set the curves.</param>
+         */
+
+        public static void SetCurve(
+            this AnimationClip clip,
+            string objectPath,
+            System.Type type,
+            string propertyName,
+            Quaternion constantValue)
+        {
+            clip.SetCurve(objectPath, type, $"{propertyName}.x", constantValue.x);
+            clip.SetCurve(objectPath, type, $"{propertyName}.y", constantValue.y);
+            clip.SetCurve(objectPath, type, $"{propertyName}.z", constantValue.z);
+            clip.SetCurve(objectPath, type, $"{propertyName}.w", constantValue.w);
+        }
+
+        /**
          * <summary>Create an animation 'Curve' for a floating-point value that should
          * stay constant during the whole animation.</summary>
          * 

@@ -22,7 +22,7 @@ namespace Myy
 
         const string mainPrefix = "V-WLAS-";
         const string variableNamePrefix = mainPrefix + "Lock";
-        const string avatarNameSuffix = "-WLAS-Constraints";
+        const string avatarNameSuffix = "-WLAS-VRCConstraints";
 
         const string mainMenuFileName = "SDK3-Expressions-Menu.asset";
         const string mainMenuParametersFileName = "SDK3-Expressions-Parameters.asset";
@@ -424,7 +424,9 @@ namespace Myy
              * substitute, that acts like the actual one, is added.
              * */
             GameObject stationsProxies = null;
-            if (options.defaultToggledOn)
+            bool anyObjectDisabledByDefault =
+                objects.Any<SetupObjectVRCConstraints>((SetupObjectVRCConstraints o) => o.options.defaultToggledOn);
+            if (anyObjectDisabledByDefault)
             {
                 stationsProxies = FindOrCreateStationProxies(avatarCopy.transform);
             }
@@ -459,16 +461,15 @@ namespace Myy
                     AssetDatabase.SetLabels(itemSubMenu, assetLabels);
                     MyyVRCHelpers.VRCMenuAddSubMenu(subMenu, itemSubMenu, toAttach.nameInMenu);
 
-
-                    actualEntries.AddToggle(
-                        TranslationStrings.Translate(TranslationStrings.StringID.VRCMenu_WorldLock),
-                        toAttach.worldLockAnimVariableName);
-
                     AnimatorStateMachine machineOnOff = toAttach.StateMachine(SetupObjectVRCConstraints.MachineIndex.Toggle);
                     MyyAnimHelpers.ControllerAddLayer(fxController, machineOnOff);
                     actualEntries.AddToggle(
                         TranslationStrings.Translate(TranslationStrings.StringID.VRCMenu_ToggleOn),
                         toAttach.toggleAnimVariableName);
+
+                    actualEntries.AddToggle(
+                        TranslationStrings.Translate(TranslationStrings.StringID.VRCMenu_WorldLock),
+                        toAttach.worldLockAnimVariableName);
 
                     actualEntries.InsertIntoMenu(itemSubMenu, runAssets, assetLabels);
                 }
