@@ -23,6 +23,7 @@ namespace Myy
         public VRCConstraintsGlobalOptions options = VRCConstraintsGlobalOptions.Default();
         public string worldLockAnimVariableName = "";
         public string toggleAnimVariableName = "";
+        public string objectName = null;
 
         public enum ClipIndex
         {
@@ -102,7 +103,7 @@ namespace Myy
         /** <summary>The 'Animation path' to use to reference the fixed object</summary> */
         private string PathToObject()
         {
-            return fixedObject.name;
+            return objectName;
         }
 
         /* FIXME : A dictionnary might be more relevant here */
@@ -236,7 +237,8 @@ namespace Myy
             /* Copy the object to attach and set it as a child of the VRChat Avatar (copy) object */ 
             GameObject fixedCopy = UnityEngine.Object.Instantiate(fixedObject, avatar.transform);
             /* Reuse the exact same name (and not something like "Name (Clone)")*/ 
-            fixedCopy.name = fixedObject.name;
+            fixedCopy.name = objectName;
+            
 
             /* Setup animations to disable the object constraints when locking the object if required */
             if (options.disableConstraintsOnLock)
@@ -257,7 +259,7 @@ namespace Myy
             AnimationClip worldLockedClip = GetClip(ClipIndex.WorldLocked);
             AnimationClip toggledOnClip = GetClip(ClipIndex.ToggleOn);
             AnimationClip toggledOffClip = GetClip(ClipIndex.ToggleOff);
-            string animatedItemPath = fixedCopy.name;
+            string animatedItemPath = PathToObject();
 
             /* If a VRCParentConstraint is already setup on the avatar, we'll just reuse it.
              * Else, we make sure to add an Active one

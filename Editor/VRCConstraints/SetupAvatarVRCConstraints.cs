@@ -31,6 +31,7 @@ namespace Myy
         const string mainSubMenuName = "World Objects";
         const string stationsProxiesContainerName = mainPrefix + "Stations";
         const string menuItemNameToggle = "Toggle";
+        const string pageMenuLabel = mainPrefix + "Pagination";
 
         readonly string[] assetLabels = new string[] { "World-Lock Autosetup" };
         Regex avatarSuffixRegex = new Regex(avatarNameSuffix + @"-\d{6}-\d{6}");
@@ -85,14 +86,24 @@ namespace Myy
             return (currentBitsCost + addedParametersBitsCost) < limit;
         }
 
-        public bool PrepareObjects(MyyAssetsManager runAssets)
+        bool OneGameObjectHaveThisName(GameObject[] gameObjects, string name)
+        {
+            return Array.Exists(gameObjects, go => go.name == name);
+        }
+
+        public bool PrepareObjects(VRCAvatarDescriptor avatar, MyyAssetsManager runAssets)
         {
             bool atLeastOnePrepared = false;
+            GameObject[] avatarChildrenBeforeSetup = avatar.gameObject.GetChildren();
             foreach (SetupObjectVRCConstraints o in objects)
             {
-                string objectName = o.fixedObject.name;
-                string objectFolderName = MyyAssetsManager.FilesystemFriendlyName(objectName);
+                string currentObjectName = o.fixedObject.name;
+                bool namedTaken = OneGameObjectHaveThisName(avatarChildrenBeforeSetup, currentObjectName);
+                string desiredName = !namedTaken ? currentObjectName : $"{currentObjectName}-{Guid.NewGuid()}";
+                
+                string objectFolderName = MyyAssetsManager.FilesystemFriendlyName(desiredName);
                 string objectSavePath = runAssets.MkDir(objectFolderName);
+                o.objectName = objectSavePath.Substring(objectSavePath.LastIndexOf('/')+1);
                 if (objectSavePath == "")
                 {
                     MyyLogger.LogError("Could not prepare the appropriate folder for {0}", objectFolderName);
@@ -167,6 +178,15 @@ namespace Myy
             return null;
         }
 
+        bool ControlIsPaginationSubMenuAddedByUs(VRCExpressionsMenu.Control control)
+        {
+            var subMenu = control.subMenu;
+            if (subMenu == null) { return false; }
+            var labels = AssetDatabase.GetLabels(subMenu);
+            if (labels == null) { return false; }
+            return labels.Contains(pageMenuLabel);
+        }
+
         MenuEntries CopyPreviousMenuControls(VRCExpressionsMenu.Control previousControl)
         {
             MenuEntries entries = new MenuEntries();
@@ -183,14 +203,33 @@ namespace Myy
                     continue;
                 }
 
-                if (IsThisControlSubMenuGeneratedByUs(control))
-                {
-                    entries.AddRange(control.subMenu.controls);
-                }
-                else
+                bool isAPaginationSubMenuAddedByUs =
+                    ControlIsPaginationSubMenuAddedByUs(control);
+
+                /*
+                 * When adding more than 8 objects in the World Objects Menu,
+                 * we need to split all the entries into submenus.
+                 * 
+                 * However, now that we've split them into submenus, when we
+                 * need to gather them again, we need to gather all the entries
+                 * just like before 'the split'.
+                 * 
+                 * For that we tagged the subMenu asset used with a special label.
+                 * If we find this label, we add all the controls of the submenu
+                 * instead.
+                 * Else, we just add the menu as normal.
+                 * 
+                 * TODO : We could actually go Recursive instead
+                 */
+                if (!isAPaginationSubMenuAddedByUs)
                 {
                     entries.Add(control);
                 }
+                else
+                {
+                    entries.AddRange(control.subMenu.controls);
+                }
+                
             }
 
             return entries;
@@ -279,6 +318,10 @@ namespace Myy
                 MyyAssetsManager assets,
                 string[] assetLabels)
             {
+                string[] subMenuLabels = new string[assetLabels.Length + 1];
+                int lastIndex = subMenuLabels.Length - 1;
+                Array.Copy(assetLabels, subMenuLabels, assetLabels.Length);
+                subMenuLabels[lastIndex] = pageMenuLabel;
                 if (this.Count <= 0)
                 {
                     return;
@@ -297,7 +340,7 @@ namespace Myy
                     VRCExpressionsMenu subMenu = assets.ScriptAssetCopyOrCreate<VRCExpressionsMenu>(
                         null,
                         $"{mainPrefix}SDK3-Expressions-SubMenu-ItemGroup-{subMenuIndex+1}.asset");
-                    AssetDatabase.SetLabels(subMenu, assetLabels);
+                    AssetDatabase.SetLabels(subMenu, subMenuLabels);
                     
 
                     int start = subMenuIndex * 8;
@@ -447,35 +490,42 @@ namespace Myy
                     MyyVRCHelpers.VRCParamsGetOrAddParam(parameters, param);
                 }
 
-                MenuEntries actualEntries = entries;
-
                 AnimatorStateMachine worldLock = toAttach.StateMachine(SetupObjectVRCConstraints.MachineIndex.WorldLocked);
                 MyyAnimHelpers.ControllerAddLayer(fxController, worldLock);
 
-
+                /* If we need to add separate
+                 * Toggle button and World Lock 'Toggles' buttons,
+                 * then we add a new submenu, with the two toggles.
+                 * The submenu name is actually the item name.
+                 */
                 if (toAttach.options.toggleIndividually)
                 {
-                    string itemNenuFileName = itemMenuPrefix + toAttach.nameInMenu + ".asset";
-                    actualEntries = new MenuEntries();
-                    VRCExpressionsMenu itemSubMenu = runAssets.ScriptAssetCopyOrCreate<VRCExpressionsMenu>(null, itemNenuFileName);
-                    AssetDatabase.SetLabels(itemSubMenu, assetLabels);
-                    MyyVRCHelpers.VRCMenuAddSubMenu(subMenu, itemSubMenu, toAttach.nameInMenu);
-
                     AnimatorStateMachine machineOnOff = toAttach.StateMachine(SetupObjectVRCConstraints.MachineIndex.Toggle);
                     MyyAnimHelpers.ControllerAddLayer(fxController, machineOnOff);
-                    actualEntries.AddToggle(
+
+                    string itemMenuName = itemMenuPrefix + toAttach.objectName;
+                    string itemMenuFileName = itemMenuName + ".asset";
+                    
+                    VRCExpressionsMenu itemSubMenu = ScriptableObject.CreateInstance<VRCExpressionsMenu>();
+
+                    itemSubMenu.AddToggle(
                         TranslationStrings.Translate(TranslationStrings.StringID.VRCMenu_ToggleOn),
                         toAttach.toggleAnimVariableName);
-
-                    actualEntries.AddToggle(
+                    itemSubMenu.AddToggle(
                         TranslationStrings.Translate(TranslationStrings.StringID.VRCMenu_WorldLock),
                         toAttach.worldLockAnimVariableName);
 
-                    actualEntries.InsertIntoMenu(itemSubMenu, runAssets, assetLabels);
+                    runAssets.GenerateAsset(itemSubMenu, itemMenuFileName, assetLabels);
+
+                    entries.Add(MyyVRCHelpers.SubMenu(itemSubMenu, toAttach.nameInMenu));
                 }
                 else
                 {
-                    actualEntries.AddToggle(menuItemNameToggle, toAttach.worldLockAnimVariableName);
+                    /* We just add one Toggle button in the main menu, with the name of
+                     * the item, which will World Lock the item
+                     * AND also spawn the item if it's hidden by default.
+                     */
+                    entries.AddToggle(toAttach.nameInMenu, toAttach.worldLockAnimVariableName);
                 }
                 
             }
@@ -560,7 +610,7 @@ namespace Myy
                 MyyLogger.LogError("Can't prepare the assets folder. Aborting");
                 return;
             }
-            if (PrepareObjects(runAssets) == false)
+            if (PrepareObjects(avatar, runAssets) == false)
             {
                 MyyLogger.LogError("Could not prepare any object...");
                 return;

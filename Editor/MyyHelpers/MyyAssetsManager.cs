@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEditor;
 using System;
 using UnityEditor.Animations;
+using VRC.SDK3.Avatars.ScriptableObjects;
 
 namespace Myy
 {
@@ -131,13 +132,27 @@ namespace Myy
          */
         public string MkDir(string dirName)
         {
-            if (AssetDatabase.CreateFolder(saveDirPath, dirName) != "")
+            string generatedFolderGUID = AssetDatabase.CreateFolder(saveDirPath, dirName);
+            if (generatedFolderGUID == "")
             {
-                return SavePath(dirName);
+                return "";
             }
 
-            return "";
+            string actualAssetDatabasePath = AssetDatabase.GUIDToAssetPath(generatedFolderGUID);
+            if (actualAssetDatabasePath == "")
+            {
+                return "";
+            }
 
+            string createdDirectoryName = actualAssetDatabasePath.Substring(actualAssetDatabasePath.LastIndexOf('/')+1);
+            return SavePath(createdDirectoryName);
+        }
+
+        public bool FilesystemFriendlyDirNameExists(string dirName)
+        {
+            string absolutePath = $"{Application.dataPath}/{saveDirPath}/{FilesystemFriendlyName(dirName)}";
+            Debug.Log($"Checking if {absolutePath} exists !");
+            return System.IO.Directory.Exists(absolutePath);
         }
 
         /**
@@ -276,6 +291,15 @@ namespace Myy
         {
             
             return AssetDatabase.IsValidFolder(AssetPath("").Trim(' ', '/'));
+        }
+
+        public void SetDirty(UnityEngine.Object o)
+        {
+            EditorUtility.SetDirty(o);
+            if (PrefabUtility.IsPartOfAnyPrefab(o))
+            {
+                PrefabUtility.RecordPrefabInstancePropertyModifications(o);
+            }
         }
 
         /**

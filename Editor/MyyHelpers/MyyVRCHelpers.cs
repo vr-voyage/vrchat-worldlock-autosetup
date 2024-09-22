@@ -93,6 +93,121 @@ namespace Myy
             avatar.SetBaseLayer(VRCAvatarDescriptor.AnimLayerType.FX, layer);
         }
 
+        public static VRCExpressionsMenu.Control Radial(
+            string itemName,
+            string percentParameterName,
+            string menuOpenedParameterName = null,
+            float menuOpenedParameterValue = 1)
+        {
+            return new VRCExpressionsMenu.Control
+            {
+                name = itemName,
+                type = VRCExpressionsMenu.Control.ControlType.RadialPuppet,
+                parameter = new VRCExpressionsMenu.Control.Parameter()
+                {
+                    name = menuOpenedParameterName
+                },
+                value = menuOpenedParameterValue,
+                subParameters = new VRCExpressionsMenu.Control.Parameter[] {
+                    new VRCExpressionsMenu.Control.Parameter()
+                    {
+                        name = percentParameterName
+                    }
+                },
+            };
+        }
+
+        public static void AddButton(
+            this VRCExpressionsMenu menu,
+            string buttonName,
+            string parameterName,
+            float value)
+        {
+            VRCExpressionsMenu.Control.Parameter buttonParam = new VRCExpressionsMenu.Control.Parameter
+            {
+                name = parameterName
+            };
+            VRCExpressionsMenu.Control control = new VRCExpressionsMenu.Control
+            {
+                parameter = buttonParam,
+                type = VRCExpressionsMenu.Control.ControlType.Button,
+                name = buttonName,
+                value = value
+            };
+            menu.controls.Add(control);
+        }
+
+        public static VRCExpressionsMenu CreateExpressionsMenu(
+            this MyyAssetsManager assetsManager,
+            string filePathWithoutExtension)
+        {
+            return assetsManager.ScriptAssetCopyOrCreate<VRCExpressionsMenu>(
+                null, $"{filePathWithoutExtension}.asset");
+        }
+
+        public static VRCExpressionsMenu.Control SubMenu(
+            VRCExpressionsMenu subMenu,
+            string itemName,
+            string menuOpenedParameterName = null,
+            float menuOpenedParameterValue = 1,
+            params VRCExpressionsMenu.Control[] controls)
+        {
+            VRCExpressionsMenu.Control subMenuControl = new VRCExpressionsMenu.Control
+            {
+                name = itemName,
+                type = VRCExpressionsMenu.Control.ControlType.SubMenu,
+                parameter = new VRCExpressionsMenu.Control.Parameter { name = menuOpenedParameterName },
+                value = menuOpenedParameterValue,
+                subMenu = subMenu
+            };
+            subMenu.controls.AddRange(controls);
+            return subMenuControl;
+        }
+
+        public static void AddSubMenu(
+            this VRCExpressionsMenu menu,
+            MyyAssetsManager assetsManager,
+            VRCExpressionsMenu subMenu,
+            string itemName,
+            string menuOpenedParameterName = null,
+            float menuOpenedParameterValue = 1,
+            params VRCExpressionsMenu.Control[] controls)
+        {
+            menu.controls.Add(SubMenu(subMenu, itemName, menuOpenedParameterName, menuOpenedParameterValue, controls));
+        }
+
+        public static void AddRadial(
+            this VRCExpressionsMenu menu,
+            string itemName,
+            string percentParameterName,
+            string menuOpenedParameterName = null,
+            float menuOpenedParameterValue = 1)
+        {
+            menu.controls.Add(Radial(itemName, percentParameterName, menuOpenedParameterName, menuOpenedParameterValue));
+        }
+
+
+
+        public static void AddToggle(
+            this VRCExpressionsMenu menu,
+            string buttonName,
+            string parameterName,
+            float value = 1)
+        {
+            VRCExpressionsMenu.Control.Parameter buttonParam = new VRCExpressionsMenu.Control.Parameter
+            {
+                name = parameterName
+            };
+            VRCExpressionsMenu.Control control = new VRCExpressionsMenu.Control
+            {
+                parameter = buttonParam,
+                type = VRCExpressionsMenu.Control.ControlType.Toggle,
+                name = buttonName,
+                value = value
+            };
+            menu.controls.Add(control);
+        }
+
         /**
          * <summary>Add a Toggle item to a VRChat menu</summary>
          * 
@@ -167,7 +282,7 @@ namespace Myy
          * <param name="menuItemName">(Optional) The title of submenu item in the first menu</param>
          */
         public static void VRCMenuAddSubMenu(
-            VRCExpressionsMenu menu,
+            this VRCExpressionsMenu menu,
             VRCExpressionsMenu subMenu,
             string menuItemName = "")
         {
