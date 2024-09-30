@@ -204,7 +204,7 @@ namespace Myy
 
         #region UI
 
-        [MenuItem("Voyage / World Lock Setup - Constraints (PC)")]
+        [MenuItem("Voyage / Legacy / World Lock Setup - Constraints (PC)")]
         public static void ShowWindow()
         {
             GetWindow(typeof(SetupConstraintsWindow), true, "Constraints World Lock Setup (PC)");

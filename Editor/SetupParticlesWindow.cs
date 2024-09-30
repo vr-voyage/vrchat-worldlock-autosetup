@@ -165,7 +165,7 @@ namespace Myy
 
         #region UI
 
-        [MenuItem("Voyage / World Lock Setup - Particles (PC or Quest)")]
+        [MenuItem("Voyage / Legacy / World Lock Setup - Particles (PC or Quest)")]
         public static void ShowWindow()
         {
             GetWindow(typeof(SetupParticlesWindow), true, "Particles World Lock Setup (PC/Quest)");

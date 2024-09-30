@@ -7,7 +7,7 @@ namespace Myy
     {
         public TranslationStrings.HumanReadableLang lang;
 
-        [MenuItem("Voyage / World Lock Setup - Settings")]
+        [MenuItem("Voyage / World Lock Setup - Settings", priority = 1)]
         static void CreateWizard()
         {
             ScriptableWizard.DisplayWizard<WizardSelectTranslation>(

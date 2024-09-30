@@ -208,7 +208,7 @@ namespace Myy
 
         #region UI
 
-        [MenuItem("Voyage / World Lock Setup - VRC Constraints (PC - Android - iOS)")]
+        [MenuItem("Voyage / World Lock Setup - VRC Constraints (PC - Android - iOS)", priority = 0)]
         public static void ShowWindow()
         {
             GetWindow(typeof(SetupVRCConstraintsWindow), true, "Constraints World Lock Setup (PC - Android - iOS)");
