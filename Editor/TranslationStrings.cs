@@ -83,7 +83,9 @@ namespace Myy
             Label_ToggleIndividually,
             Label_DefaultToggledOn,
             VRCMenu_WorldLock,
-            VRCMenu_ToggleOn
+            VRCMenu_ToggleOn,
+            Message_InsufficientParametersResources,
+            Button_InspectExpressionParameters
         }
 
         public enum Lang
@@ -125,7 +127,8 @@ namespace Myy
             EditorPrefs.SetInt(configUILangKey, (int)lang);
         }
 
-        public static Dictionary<StringID, string> messages = new Dictionary<StringID, string> {
+        public static Dictionary<StringID, string> messages = new Dictionary<StringID, string>
+        {
             [StringID.Invalid] = "Invalid Message",
             [StringID.Label_AvatarToConfigure] = "Avatar to configure",
             [StringID.Label_ObjectToLock] = "Object to lock",
@@ -149,7 +152,7 @@ namespace Myy
             [StringID.Message_SelectObjectsToConfigure] =
                 "Select at least one object to setup.\n" +
                 "You can drop the objects to configure inside this window.",
-            [StringID.Button_SetupNewAvatar] = "APPLY",
+            [StringID.Button_SetupNewAvatar] = "Clone avatar and equip",
             [StringID.Button_ResetPanel] = "RESET",
             [StringID.Button_InspectExpressionMenu] = "Open the Menu in the Inspector",
             [StringID.Label_HiddenWhenOff] = "Hide these items when not locked",
@@ -160,7 +163,12 @@ namespace Myy
             [StringID.Label_ResetPositionOnLock] = "Reset object position when unlocked",
             [StringID.Label_DefaultToggledOn] = "Item out by default",
             [StringID.VRCMenu_WorldLock] = "Lock",
-            [StringID.VRCMenu_ToggleOn] = "Show"
+            [StringID.VRCMenu_ToggleOn] = "Show",
+            [StringID.Message_InsufficientParametersResources] =
+                "Equipping the provided items would lead to too much expression Parameters bytes used.\n" +
+                "Either remove some parameters on your Avatar Expression Parameters, or equip less items",
+            [StringID.Button_InspectExpressionParameters] =
+                "Inspect the Avatar Expression Parameters"
         };
 
         public static Dictionary<StringID, string> messagesJP = new Dictionary<StringID, string>
@@ -188,7 +196,7 @@ namespace Myy
             [StringID.Message_SelectObjectsToConfigure] =
                 "固定したいアイテムを選んでください。\n" +
                 "ヒエラルキーから、その画面にドロップしてよろしいです。",
-            [StringID.Button_SetupNewAvatar] = "適用",
+            [StringID.Button_SetupNewAvatar] = "アバターを複製して装備する",
             [StringID.Button_ResetPanel] = "リセット",
             [StringID.Button_InspectExpressionMenu] = "MenuをInspectorで開く",
             [StringID.Label_HiddenWhenOff] = "固定するまで、アイテムを隠す",
@@ -200,7 +208,11 @@ namespace Myy
             [StringID.Label_ResetPositionOnLock] = "固定を解除すると元の位置に戻す",
             [StringID.Label_DefaultToggledOn] = "デフォルトでアイテムを出す",
             [StringID.VRCMenu_WorldLock] = "固定",
-            [StringID.VRCMenu_ToggleOn] = "出す"
+            [StringID.VRCMenu_ToggleOn] = "出す",
+            [StringID.Message_InsufficientParametersResources] =
+                "アイテムを装備したら、Expression ParametersのSynced Bytes制限を超えてしまいます\n" +
+                "Expression Parametersを減るのかアイテム量を減るのか選んでください",
+            [StringID.Button_InspectExpressionParameters] = "Expression ParametersをInspectorで開く"
         };
 
         public static Dictionary<StringID, string> currentTranslation = messagesJP;

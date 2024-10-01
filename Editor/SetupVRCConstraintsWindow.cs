@@ -86,6 +86,18 @@ namespace Myy
                 return false;
             }
 
+            if (avatar.expressionParameters.CalcTotalCost() + worldLockedObjects.Length > VRCExpressionParameters.MAX_PARAMETER_COST)
+            {
+                EditorGUILayout.HelpBox(
+                    Translate(StringID.Message_InsufficientParametersResources),
+                    MessageType.Error);
+                if (GUILayout.Button(Translate(StringID.Button_InspectExpressionParameters)))
+                {
+                    AssetDatabase.OpenAsset(avatar.expressionParameters);
+                }
+                return false;
+            }
+
             return true;
         }
 
