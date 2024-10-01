@@ -160,8 +160,8 @@ namespace Myy
             [StringID.Message_AvatarAlreadyConfiguredParticles] = "Equipping another item on an already equipped avatar copy is not supported in this mode.",
             [StringID.Message_AvatarHasNoFxLayerStrangeBug] = "It seems impossible to setup an FX layer on this avatar.\nThis is a very strange bug. Could you report it with your configuration ?",
             [StringID.Label_ToggleIndividually] = "Separate the 'ON/OFF' and 'World Lock' buttons",
-            [StringID.Label_ResetPositionOnLock] = "Reset object position when unlocked",
-            [StringID.Label_DefaultToggledOn] = "Item out by default",
+            [StringID.Label_ResetPositionOnLock] = "Make items go back to their original positions when unlocked",
+            [StringID.Label_DefaultToggledOn] = "Show items by default",
             [StringID.VRCMenu_WorldLock] = "Lock",
             [StringID.VRCMenu_ToggleOn] = "Show",
             [StringID.Message_InsufficientParametersResources] =
