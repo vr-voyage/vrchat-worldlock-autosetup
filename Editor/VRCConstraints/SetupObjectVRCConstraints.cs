@@ -500,7 +500,7 @@ namespace Myy
             /* Just in case some objects were to have multiple Station components for no reason,
              * we'll use a 'Set' instead of a standard list */
             HashSet<GameObject> objectsWithStationSet = new HashSet<GameObject>();
-            foreach (var station in this.worldFixedObjectCopy.GetComponentsInChildren<VRCStation>())
+            foreach (var station in this.worldFixedObjectCopy.GetComponentsInChildren<VRCStation>(true))
             {   
                 objectsWithStationSet.Add(station.gameObject);
             }

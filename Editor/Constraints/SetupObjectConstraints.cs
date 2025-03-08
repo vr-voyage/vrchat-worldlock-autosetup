@@ -104,7 +104,7 @@ namespace Myy
         public void FixConstraintSources(GameObject mainAvatar, GameObject avatarCopy)
         {
             List<ConstraintSource> constraintSources = new List<ConstraintSource>();
-            foreach (var constraint in copy.GetComponentsInChildren<IConstraint>())
+            foreach (var constraint in copy.GetComponentsInChildren<IConstraint>(true))
             {
                 constraintSources.Clear();
 
@@ -255,7 +255,7 @@ namespace Myy
             }
 
 
-            foreach (Transform t in fixedCopy.GetComponentsInChildren<Transform>())
+            foreach (Transform t in fixedCopy.GetComponentsInChildren<Transform>(true))
             {
                 GameObject go = t.gameObject;
                 string relativePathFromContainer = go.PathFrom(lockedContainer);
@@ -271,14 +271,14 @@ namespace Myy
                 {
                     var worldLockClip = clips[(int)ClipIndex.WorldLocked];
                     var notWorldLockClip = clips[(int)ClipIndex.NotWorldLocked];
-                    foreach (var constraint in go.GetComponentsInChildren<IConstraint>())
+                    foreach (var constraint in go.GetComponentsInChildren<IConstraint>(true))
                     {
                         worldLockClip.SetCurve(
                             lockedObjectPath, constraint.GetType(), "m_Enabled", ConstantCurve(false));
                         notWorldLockClip.SetCurve(
                             lockedObjectPath, constraint.GetType(), "m_Enabled", ConstantCurve(true));
                     }
-                    foreach (var vrcConstraint in go.GetComponentsInChildren<VRCConstraintBase>())
+                    foreach (var vrcConstraint in go.GetComponentsInChildren<VRCConstraintBase>(true))
                     {
                         worldLockClip.SetCurve(
                             lockedObjectPath, vrcConstraint.GetType(), "m_Enabled", ConstantCurve(false));
@@ -352,7 +352,7 @@ namespace Myy
             }
 
             HashSet<GameObject> objectsSet = new HashSet<GameObject>();
-            foreach (var station in this.copy.GetComponentsInChildren<VRCStation>())
+            foreach (var station in this.copy.GetComponentsInChildren<VRCStation>(true))
             {
                 /* Just in case some objects were to have
                  * multiple Station components for no reason... */
