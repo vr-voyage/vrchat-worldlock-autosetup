@@ -1,7 +1,7 @@
 {
   "name": "io.github.vr-voyage.tools.world-lock-autosetup",
   "displayName": "Voyage's World Lock Autosetup",
-  "version": "1.5.0",
+  "version": "1.5.1",
   "unity": "2019.4",
   "description": "Tools to automatically equip world locked items on avatars. https://github.com/vr-voyage/vrchat-worldlock-autosetup",
   "author": {

@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using VRC.SDK3.Avatars.Components;
 using VRC.SDK3.Dynamics.Constraint.Components;
 using VRC.SDKBase.Validation.Performance;
+using UnityEngine.Rendering;
 
 namespace Myy
 {
@@ -24,6 +25,7 @@ namespace Myy
         public string worldLockAnimVariableName = "";
         public string toggleAnimVariableName = "";
         public string objectName = null;
+        public string containerName = null;
 
         public enum ClipIndex
         {
@@ -75,11 +77,25 @@ namespace Myy
             worldFixedObjectCopy = null;
         }
 
+        private bool ConstraintSourcesAreInternal(IConstraint constraint, List<ConstraintSource> sources, GameObject interiorLimit)
+        {
+            constraint.GetSources(sources);
+            foreach (var source in sources)
+            {
+                Transform sourceTransform = source.sourceTransform;
+                if (sourceTransform == null) { continue; }
+                if (sourceTransform.gameObject.PathFrom(interiorLimit) == null) { continue; }
+                return true;
+            }
+            return false;
+        }
+
         /** <summary>Initialize the animator parameters used</summary> */
         private void ParametersInit(string prefix)
         {
             worldLockAnimVariableName = $"{prefix}-WorldLock";
             toggleAnimVariableName = $"{prefix}-Toggle";
+            containerName = $"{prefix}-Container";
 
             parameters[(int)ParameterIndex.WorldLocked] = MyyAnimHelpers.Parameter(worldLockAnimVariableName, false);
             if (options.toggleIndividually)
@@ -103,7 +119,12 @@ namespace Myy
         /** <summary>The 'Animation path' to use to reference the fixed object</summary> */
         private string PathToObject()
         {
-            return objectName;
+            return containerName;
+        }
+
+        private string PathToLockedChild()
+        {
+            return $"{containerName}/{fixedObject.name}";
         }
 
         /* FIXME : A dictionnary might be more relevant here */
@@ -125,14 +146,16 @@ namespace Myy
                 if (child == parentTransform) continue;
 
                 /* Collect all Unity Constraints */
+                List<ConstraintSource> constraintSources = new List<ConstraintSource>(2);
                 foreach (var constraint in child.GetComponents<IConstraint>())
                 {
+                    if (ConstraintSourcesAreInternal(constraint, constraintSources, parentTransform.gameObject)) { continue; }
                     childrenConstraints.Add((child, constraint));
                 }
 
                 /* Collect all VRChat Constraints */
                 foreach (var vrcConstraint in child.GetComponents<IVRCConstraint>())
-                {
+                {                    
                     childrenConstraints.Add((child, vrcConstraint));
                 }
             }
@@ -141,6 +164,28 @@ namespace Myy
             return childrenConstraints.ToArray();
         }
 
+        void DeleteAllConstraintsInActualChildren(Transform parentTransform)
+        {
+            foreach (Transform child in parentTransform.GetComponentInChildren<Transform>())
+            {
+                /* Unity will provide you the parent in the 'Children' list */
+                if (child == parentTransform) continue;
+
+                /* Collect all Unity Constraints */
+                List<ConstraintSource> constraintSources = new List<ConstraintSource>(2);
+                foreach (var constraint in child.GetComponents<IConstraint>())
+                {
+                    if (ConstraintSourcesAreInternal(constraint, constraintSources, parentTransform.gameObject)) { continue; }
+                    Object.DestroyImmediate((Component)constraint);
+                }
+
+                /* Collect all VRChat Constraints */
+                foreach (var vrcConstraint in child.GetComponents<IVRCConstraint>())
+                {
+                    Object.DestroyImmediate((Component)vrcConstraint);
+                }
+            }
+        }
 
         /** <summary>
          * Prepare the animations to handle already setup Constraints when locking the object
@@ -162,6 +207,20 @@ namespace Myy
             AnimationClip worldLockedClip = clips[(int)ClipIndex.WorldLocked];
             AnimationClip notWorldLockedClip = clips[(int)ClipIndex.NotWorldLocked];
 
+            /* There's a weird bug when it comes to VRC Constraint and disabling the constraint
+             * when enabling the object, when using only one button.
+             * To avoid the issue, we just delete the constraint, since in such cases, the constraint
+             * is useless. The object isn't visible when not constrained. And when constrained, we
+             * actually disable the object's ones.
+             */
+            bool shouldDeleteInstead = !options.defaultToggledOn && options.disableConstraintsOnLock && !options.toggleIndividually;
+
+            if (shouldDeleteInstead)
+            {
+                Debug.LogWarning("Deleting Constraints !");
+                DeleteAllConstraintsInActualChildren(fixedCopy.transform);
+                return;
+            }
             (Transform t, object component)[] childrenConstraints = CollectAllConstraintsInActualChildren(fixedCopy.transform);
             /* We also disable child constraints. */
             /* FIXME
@@ -175,31 +234,6 @@ namespace Myy
 
                 worldLockedClip.SetCurve(animatedObjectChildPath, constraintType, "m_Enabled", false);
                 notWorldLockedClip.SetCurve(animatedObjectChildPath, constraintType, "m_Enabled", true);
-            }
-
-            /* We disable all the Unity constraints on the main object */ 
-            /* FIXME : We should only touch Position, Rotation and Parent.
-             * There's no clear reason why should touch things like Scale Constraint.
-             * Aim Constraint is a bit tricky.
-             */
-            string fixedCopyPath = fixedCopy.PathFrom(avatar);
-            foreach (IConstraint oldConstraint in fixedCopy.GetComponents<IConstraint>())
-            {
-                System.Type constraintType = oldConstraint.GetType();
-                worldLockedClip.SetCurve(fixedCopyPath, constraintType, "m_Enabled", false);
-                notWorldLockedClip.SetCurve(fixedCopyPath, constraintType, "m_Enabled", true);
-            }
-
-            /* We disable any VRChat constraint that is NOT a Parent Constraint.
-             * This avoid the item returning to the user hand because there's a Position Constraint
-             * for example
-             */
-            foreach (IVRCConstraint vrcConstraint in fixedCopy.GetComponents<IVRCConstraint>())
-            {
-                System.Type constraintType = vrcConstraint.GetType();
-                if (constraintType == typeof(VRCParentConstraint)) continue;
-                worldLockedClip.SetCurve(fixedCopyPath, constraintType, "m_Enabled", false);
-                notWorldLockedClip.SetCurve(fixedCopyPath, constraintType, "m_Enabled", true);
             }
 
         }
@@ -234,11 +268,15 @@ namespace Myy
          */
         public void AttachHierarchy(GameObject avatar)
         {
+            GameObject fixedCopy = new GameObject();
+            fixedCopy.name = containerName;
+            fixedCopy.transform.parent = avatar.transform;
+
             /* Copy the object to attach and set it as a child of the VRChat Avatar (copy) object */ 
-            GameObject fixedCopy = UnityEngine.Object.Instantiate(fixedObject, avatar.transform);
-            /* Reuse the exact same name (and not something like "Name (Clone)")*/ 
-            fixedCopy.name = objectName;
-            
+            GameObject clonedObject = UnityEngine.Object.Instantiate(fixedObject, fixedCopy.transform);
+            /* Reuse the exact same name (and not something like "Name (Clone)")*/
+            clonedObject.name = objectName;
+
 
             /* Setup animations to disable the object constraints when locking the object if required */
             if (options.disableConstraintsOnLock)
@@ -264,54 +302,40 @@ namespace Myy
             /* If a VRCParentConstraint is already setup on the avatar, we'll just reuse it.
              * Else, we make sure to add an Active one
              */
-            bool hadNoVRCConstraint = (fixedCopy.GetComponent<VRCParentConstraint>() == null);
-            bool hadNoUnityConstraints = (fixedCopy.GetComponent<IConstraint>() == null);
-            if (hadNoVRCConstraint)
-            {
-                var component = fixedCopy.AddComponent<VRCParentConstraint>();
-                component.IsActive = true;
-            }
 
-            if (hadNoVRCConstraint & hadNoUnityConstraints)
-            { 
-                /* FIXME : Make it optional */
-                /* Move the object to the relative position set by default */
-                if (options.resetItemPositionOnLock)
+            /* TODO : Add an empty if a VRC Parent Constraint already exist on the main object ! */ 
+            VRCParentConstraint parentConstraint = fixedCopy.GetComponent<VRCParentConstraint>();
+            parentConstraint = fixedCopy.AddComponent<VRCParentConstraint>();
+
+            parentConstraint.Sources.Add(
+                new VRC.Dynamics.VRCConstraintSource
                 {
-                    Vector3 currentPosition = fixedCopy.transform.localPosition;
-                    Quaternion currentRotation = fixedCopy.transform.localRotation;
-                    Debug.Log($"{fixedCopy.name} current rotation {currentRotation.eulerAngles}");
+                    ParentPositionOffset = Vector3.zero,
+                    ParentRotationOffset = Vector3.zero,
+                    SourceTransform = avatar.transform,
+                    Weight = 1
+                });
+            parentConstraint.IsActive = true;
+            parentConstraint.RebakeOffsetsWhenUnfrozen = !options.resetItemPositionOnLock;
 
-                    // localEulerAnglesRaw
+            if (!OldAlwaysOnBehaviour())
+            {
+                /* Remember the current scale */
+                Vector3 currentScale = fixedCopy.transform.localScale;
 
-                    fixedCopy.transform.localPosition = Vector3.zero;
+                /* Reset the current position and scale.
+                    * We don't need to touch the rotation */
+                fixedCopy.transform.localScale = Vector3.zero;
 
-                    notWorldLockedClip.SetCurve(animatedItemPath, typeof(Transform), "localEulerAngles", currentRotation.eulerAngles);
-                    notWorldLockedClip.SetCurve(animatedItemPath, typeof(Transform), "m_LocalPosition", currentPosition);
+                /* Scale the object to 0 and move it to the avatar's origin when disabled */
+                toggledOffClip.SetCurve(animatedItemPath, typeof(Transform), "m_LocalScale", Vector3.zero);
 
-                    /* If the user wants the item to be hidden by default
-                     * We'll move the item to the avatar root and scale it to 0, while inactive
-                     * and then scale it back when enabling the object.
-                     * FIXME : Actually take into account all the cases where it's always on.
-                     */
-                    if (!OldAlwaysOnBehaviour())
-                    {
-                        /* Remember the current scale */
-                        Vector3 currentScale = fixedCopy.transform.localScale;
-
-                        /* Reset the current position and scale.
-                         * We don't need to touch the rotation */
-                        fixedCopy.transform.localScale = Vector3.zero;
-
-                        /* Scale the object to 0 and move it to the avatar's origin when disabled */
-                        toggledOffClip.SetCurve(animatedItemPath, typeof(Transform), "m_LocalScale", Vector3.zero);
-
-                        /* Scale it back when enabled.
-                         * The movement is handled in any case */
-                        toggledOnClip.SetCurve(animatedItemPath, typeof(Transform), "m_LocalScale", currentScale);
-                    }
-                }
+                /* Scale it back when enabled.
+                    * The movement is handled in any case */
+                toggledOnClip.SetCurve(animatedItemPath, typeof(Transform), "m_LocalScale", currentScale);
             }
+
+
 
             AssetDatabase.SaveAssets();
 
@@ -322,6 +346,7 @@ namespace Myy
         public bool GenerateAnims()
         {
             string animatedObjectPath = PathToObject();
+            string animatedObjectChildPath = PathToLockedChild();
             GenerateAnimations(assetManager, clips,
                 ((int)ClipIndex.NotWorldLocked, "Not World Locked", new AnimProperties()),
                 ((int)ClipIndex.WorldLocked, "World Locked", new AnimProperties())
@@ -349,15 +374,15 @@ namespace Myy
             if (!oldAlwaysOnBehaviour)
             {
                 Debug.LogWarning($"Setting up for {animatedObjectPath}");
-                /* Setup the toggle animation */
-                toggleOnClip.SetCurve(animatedObjectPath, typeof(GameObject), "m_IsActive", true);
-                toggleOffClip.SetCurve(animatedObjectPath, typeof(GameObject), "m_IsActive", false);
+                
+                toggleOnClip.SetCurve(animatedObjectChildPath, typeof(GameObject), "m_IsActive", true);
+                toggleOffClip.SetCurve(animatedObjectChildPath, typeof(GameObject), "m_IsActive", false);
             }
 
 
             /* Make sure the World VRChat Parent Constraint is Active when World Locking.
              * Just in case, another animation is trying to disable the constraint */ 
-            worldLockedClip.SetCurve(animatedObjectPath, typeof(VRCParentConstraint), "IsActive", true);
+            //worldLockedClip.SetCurve(animatedObjectPath, typeof(VRCParentConstraint), "IsActive", true);
 
             /* Then check 'World Lock' every time we want to World Lock (duh !) */
             worldLockedClip.SetCurve(animatedObjectPath, typeof(VRCParentConstraint), "FreezeToWorld", true);
