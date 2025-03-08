@@ -258,7 +258,7 @@ namespace Myy
             return newSubMenu;
         }
 
-        GameObject FindOrCreateStationProxies(Transform avatarCopy)
+        GameObject FindOrCreateStationProxy(Transform avatarCopy)
         {
             Transform stationProxiesTransform = avatarCopy.Find(stationsProxiesContainerName);
             if (stationProxiesTransform != null)
@@ -466,12 +466,12 @@ namespace Myy
              * Hence the name 'Station Proxy'. The actual Station is removed and a
              * substitute, that acts like the actual one, is added.
              * */
-            GameObject stationsProxies = null;
+            GameObject stationProxy = null;
             bool anyObjectDisabledByDefault =
-                objects.Any<SetupObjectVRCConstraints>((SetupObjectVRCConstraints o) => o.options.defaultToggledOn);
+                objects.Any<SetupObjectVRCConstraints>((SetupObjectVRCConstraints o) => !o.options.defaultToggledOn);
             if (anyObjectDisabledByDefault)
             {
-                stationsProxies = FindOrCreateStationProxies(avatarCopy.transform);
+                stationProxy = FindOrCreateStationProxy(avatarCopy.transform);
             }
             
             foreach (SetupObjectVRCConstraints toAttach in objects)
@@ -482,7 +482,7 @@ namespace Myy
                 /* Add the object to the hierarchy */ 
                 toAttach.AttachHierarchy(avatarCopy.gameObject);
                 ConstraintsHelpers.FixExternalConstraintSources(avatar.gameObject, avatarCopy.gameObject, toAttach.worldFixedObjectCopy);
-                toAttach.SetupStationsProxies(stationsProxies);
+                toAttach.SetupStationsProxies(stationProxy);
 
                 foreach (AnimatorControllerParameter param in toAttach.parameters)
                 {

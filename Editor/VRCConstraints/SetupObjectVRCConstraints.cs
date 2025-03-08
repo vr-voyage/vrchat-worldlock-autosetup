@@ -485,7 +485,7 @@ namespace Myy
                 return false;
             }
             /* Proxies are only useful when the object is disabled by default */
-            if (!options.defaultToggledOn)
+            if (options.defaultToggledOn)
             {
                 return false;
             }
